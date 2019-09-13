@@ -1,0 +1,5 @@
+void main()
+{
+    Int a++=='ajfjds as \" ae=9987'
+    char b='a';
+}

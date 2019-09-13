@@ -1,0 +1,130 @@
+Token 1:
+Class: void
+Value: 
+Line: 1
+
+
+Token 2:
+Class: main
+Value: 
+Line: 1
+
+
+Token 3:
+Class: (
+Value: 
+Line: 1
+
+
+Token 4:
+Class: )
+Value: 
+Line: 1
+
+
+Token 5:
+Class: CharConst
+Value: 
+
+Line: 2
+
+
+Token 6:
+Class: {
+Value: 
+Line: 2
+
+
+Token 7:
+Class: CharConst
+Value: 
+
+Line: 3
+
+
+Token 8:
+Class: ID
+Value: Int
+Line: 3
+
+
+Token 9:
+Class: ID
+Value: a
+Line: 3
+
+
+Token 10:
+Class: +
+Value: 
+Line: 3
+
+
+Token 11:
+Class: +=
+Value: 
+Line: 3
+
+
+Token 12:
+Class: =
+Value: 
+Line: 3
+
+
+Token 13:
+Class: StringConst
+Value: ajfjds as \" ae=9987
+Line: 3
+
+
+Token 14:
+Class: CharConst
+Value: 
+
+Line: 4
+
+
+Token 15:
+Class: char
+Value: 
+Line: 4
+
+
+Token 16:
+Class: ID
+Value: b
+Line: 4
+
+
+Token 17:
+Class: =
+Value: 
+Line: 4
+
+
+Token 18:
+Class: CharConst
+Value: a
+Line: 4
+
+
+Token 19:
+Class: ;
+Value: 
+Line: 4
+
+
+Token 20:
+Class: CharConst
+Value: 
+
+Line: 5
+
+
+Token 21:
+Class: }
+Value: 
+Line: 5
+
+

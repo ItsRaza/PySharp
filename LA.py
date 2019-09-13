@@ -1,0 +1,225 @@
+import regex
+import WordSplitter
+import Token
+# import pickle
+
+digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+
+def lexer(filename):
+    Tokens = []
+    lineNo = 1
+    string = readFile(filename)
+    words = WordSplitter.BreakWord(string)
+    print(len(words))
+    for word in words:
+        Token1 = Token.Token()
+        if (word[0] == '\n'):
+            lineNo += 1
+        if(word[0] == '_'):
+            if(regex.isIdentifier(word)):
+                Token1.CP = 'ID'
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+            else:
+                Token1.CP = 'Invalid Lexeone'
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                #word = ""
+
+        if(isAlpha(word[0])):
+            if(regex.isIdentifier(word)):
+                temp = regex.isKw(word)
+                if(temp == ""):
+                    Token1.CP = 'ID'
+                    Token1.VP = word
+                    Token1.LineNo = lineNo
+                    Tokens.append(Token1)
+                    #word = ""
+                else:
+                    Token1.CP = temp
+                    Token1.LineNo = lineNo
+                    Tokens.append(Token1)
+                    #word = ""
+            else:
+                Token1.CP = 'Invalid Lexeone'
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                #word = ""
+        if(word in WordSplitter.seperators):
+            if(word == '\n'):
+                Token1.CP = "CharConst"
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                #word = ""
+            else:
+                Token1.CP = word
+                Token1.VP = ""
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                #word = ""
+        if(isDigit(word[0])):
+            if(regex.isIntConstant(word)):
+                Token1.CP = "IntConst"
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                #word = ""
+            elif(regex.isFloatConstant(word)):
+                Token1.CP = "FloatConst"
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                #word = ""
+            else:
+                Token1.CP = 'Invalid Lexeone'
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                #word = ""
+        if(word[0] in WordSplitter.quotes):
+            if(regex.isStringConstant(word[1:-1])):
+                if(len(word) == 3)or(len(word) == 4):
+                    if(regex.isCharConstant(word[1:-1])):
+                        Token1.CP = "CharConst"
+                        Token1.VP = word[1:-1]
+                        Token1.LineNo = lineNo
+                        Tokens.append(Token1)
+                        #word = ""
+                else:
+                    Token1.CP = "StringConst"
+                    Token1.VP = word[1:-1]
+                    Token1.LineNo = lineNo
+                    Tokens.append(Token1)
+                    #word = ""
+    return Tokens
+
+
+def readFile(filename):
+    with open(filename, 'r') as myfile:
+        data = myfile.read()
+    return data
+
+
+def isAlpha(ch):
+    if((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z')):
+        if(ch in WordSplitter.puntuators):
+            return False
+        return True
+
+
+def isDigit(ch):
+    if(ch in digits):
+        return True
+
+
+'''
+def lexer(filename):
+    Tokens = []
+    lineNo = 0
+    string = readFile(filename)
+    words = WordSplitter.BreakWord(string)
+    i = 0
+    while (i <= len(words)):
+        word = words[i]
+        Token1 = Token.Token()
+        if (word[0] == '\n'):
+            lineNo += 1
+        if(word[0] == '_'):
+            if(regex.isIdentifier(word)):
+                Token1.CP = 'ID'
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                i += 1
+                word = words[i]
+            else:
+                Token1.CP = 'Invalid Lexeone'
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                i += 1
+                word = words[i]
+
+        if(isAlpha(word[0])):
+            if(regex.isIdentifier(word)):
+                temp = regex.isKw(word)
+                if(temp == ""):
+                    Token1.CP = 'ID'
+                    Token1.VP = word
+                    Token1.LineNo = lineNo
+                    Tokens.append(Token1)
+                    i += 1
+                    word = words[i]
+                else:
+                    Token1.CP = temp
+                    Token1.LineNo = lineNo
+                    Tokens.append(Token1)
+                    i += 1
+                    word = words[i]
+            else:
+                Token1.CP = 'Invalid Lexeone'
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                i += 1
+                word = words[i]
+        if(word in WordSplitter.seperators):
+            if(word == '\n'):
+                Token1.CP = "CharConst"
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                i += 1
+                word = words[i]
+            else:
+                Token1.CP = word
+                Token1.VP = ""
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                i += 1
+                word = words[i]
+        if(isDigit(word[0])):
+            if(regex.isIntConstant(word)):
+                Token1.CP = "IntConst"
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                i += 1
+                word = words[i]
+            elif(regex.isFloatConstant(word)):
+                Token1.CP = "FloatConst"
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                i += 1
+                word = words[i]
+            else:
+                Token1.CP = 'Invalid Lexeone'
+                Token1.VP = word
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                i += 1
+                word = words[i]
+        if(word[0] in WordSplitter.quotes):
+            if(len(word) == 3)or(len(word) == 4):
+                if(regex.isCharConstant(word[1:-1])):
+                    Token1.CP = "CharConst"
+                    Token1.VP = word[1:-1]
+                    Token1.LineNo = lineNo
+                    Tokens.append(Token1)
+                    i += 1
+                    word = words[i]
+            if(regex.isStringConstant(word)):
+                Token1.CP = "StringConst"
+                Token1.VP = word[1:-1]
+                Token1.LineNo = lineNo
+                Tokens.append(Token1)
+                i += 1
+                word = words[i]
+    return Tokens
+'''
