@@ -37,6 +37,65 @@ def BreakWord(string):
                 char = string[i]
             lexeme += char
             i += 1
+            if(i == len(string)):
+                res.append(lexeme)
+                break
+            char = string[i]
+            res.append(lexeme)
+            lexeme = ''
+        if char != space:
+            lexeme += char
+        if i == len(string)-1:
+            if char == space or char in seperators or lexeme in seperators:
+                if lexeme != '':
+                    res.append(lexeme)
+                    lexeme = ''
+        if (i+1 < len(string)):
+            nextch = string[i+1]
+            if(nextch == '=')and(char in seperators):
+                lexeme += nextch
+                i += 1
+            if string[i+1] == space or string[i+1] in seperators or lexeme in seperators:
+                if(char == '+'or char == '-'):
+                    prech = string[i-1]
+                    if(prech == '=' or prech == space):
+                        if(string[i+1] != space):
+                            i = i+1
+                            char = string[i]
+                            lexeme += char
+                            while(char not in seperators and string[i+1] not in seperators and string[i+1] != space):
+                                i = i+1
+                                char = string[i]
+                                lexeme += char
+                if lexeme != '':
+                    res.append(lexeme)
+                    lexeme = ''
+        i = i+1
+    return res
+
+
+'''
+def BreakWord(string):
+    lexeme = ''
+    res = []
+    i = 0
+    while (i < len(string)):
+        char = string[i]
+        if char in quotes:
+            qouteIp = char
+            if i == len(string):
+                break
+            lexeme += char
+            i += 1
+            char = string[i]
+            while(char != qouteIp):
+                lexeme += char
+                if i == len(string)-1:
+                    break
+                i += 1
+                char = string[i]
+            lexeme += char
+            i += 1
             char = string[i]
             res.append(lexeme)
             lexeme = ''
@@ -58,7 +117,7 @@ def BreakWord(string):
                     lexeme = ''
         i = i+1
     return res
-
+'''
 
 '''def my_split(s):
     res = [s]

@@ -2,17 +2,18 @@ import regex
 import WordSplitter
 import LA
 
-txt = "void main()\n{\nInt a++=='ajfjds as \" ae=9987'\nchar b='a';\n}"
+txt = "void main()\n{\nint a= -558;\nInt a++=='ajfjds as \" ae=9987'\nchar b='a;\n}"
 
 # stri = LA.readFile("data.txt")
 words = WordSplitter.BreakWord(txt)
 print(words)
+
 TKs = LA.lexer('code.txt')
 print(len(TKs))
-i = 1
 for T in TKs:
     print(T.CP)
 
+i = 0
 with open("tokens.txt", "a") as myfile:
     for T in TKs:
         myfile.write("Token "+str(i)+":")
