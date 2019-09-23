@@ -2,11 +2,12 @@ import regex
 import WordSplitter
 import LA
 
-txt = "void main()\n{\nint a= -558;\nInt a++=='ajfjds as \" ae=9987'\nchar b='a;\n}"
+txt = "void main()\n{\n/*int a= -5.58*-3;*/\nInt a++=='ajfjds as \" ae=9987'\nchar b='a;\n}"
 
 # stri = LA.readFile("data.txt")
 words = WordSplitter.BreakWord(txt)
 print(words)
+
 
 TKs = LA.lexer('code.txt')
 print(len(TKs))

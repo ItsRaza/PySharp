@@ -22,8 +22,10 @@ def lexer(filename):
     print(len(words))
     for word in words:
         Token1 = Token.Token()
-        if (word[0] == '\n'):
+        if ('\n' in word):
             lineNo += 1
+        if('/*' in word):
+            pass
         if(word[0] == '_'):
             if(regex.isIdentifier(word)):
                 Token1.CP = 'ID'

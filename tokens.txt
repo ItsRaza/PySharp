@@ -41,105 +41,69 @@ Line: 3
 
 
 Token 7:
-Class: DT
-Value: int
-Line: 3
-
-
-Token 8:
-Class: ID
-Value: a
-Line: 3
-
-
-Token 9:
-Class: Assign
-Value: =
-Line: 3
-
-
-Token 10:
-Class: IntConst
-Value: -558
-Line: 3
-
-
-Token 11:
-Class: ;
-Value: 
-Line: 3
-
-
-Token 12:
 Class: CharConst
 Value: LineBreak
 Line: 4
 
 
-Token 13:
+Token 8:
 Class: ID
 Value: Int
 Line: 4
 
 
-Token 14:
+Token 9:
 Class: ID
 Value: a
 Line: 4
 
 
-Token 15:
+Token 10:
 Class: PM
 Value: +
 Line: 4
 
 
-Token 16:
-Class: Assign
-Value: +=
+Token 11:
+Class: Invalid Lexeone
+Value: +==
 Line: 4
 
 
-Token 17:
-Class: Assign
-Value: =
-Line: 4
-
-
-Token 18:
+Token 12:
 Class: StringConst
 Value: ajfjds as \" ae=9987
 Line: 4
 
 
-Token 19:
+Token 13:
 Class: CharConst
 Value: LineBreak
 Line: 5
 
 
-Token 20:
+Token 14:
 Class: DT
 Value: char
 Line: 5
 
 
-Token 21:
+Token 15:
 Class: ID
 Value: b
 Line: 5
 
 
-Token 22:
+Token 16:
 Class: Assign
 Value: =
 Line: 5
 
 
-Token 23:
+Token 17:
 Class: StringConst
 Value: a;
 }   
-Line: 5
+Line: 6
 
 

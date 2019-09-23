@@ -1,6 +1,6 @@
 void main()
 {
-    int a= -558;
+    /*int a= -5.58*-3;*/
     Int a++=='ajfjds as \" ae=9987'
     char b='a;
 }   
