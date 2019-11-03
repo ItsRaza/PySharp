@@ -1,6 +1,6 @@
-void main()
-{
-    /*int a= -5.58*-3;*/
-    Int a++=='ajfjds as \" ae=9987'
-    char b='a;
-}   
+interface::A_B_C
+while(a.b.c<<<<<==78.65
+b+++=56.75ab7.11/*.56bcx.55.55.a5c
+char c="abc++=\\"abc\\\*/"abc"a=b=c
+string s='\\\'+'++'\n'+=35'\\
+return a&&==@bc

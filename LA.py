@@ -20,6 +20,7 @@ def lexer(filename):
     string = readFile(filename)
     words = WordSplitter.BreakWord(string)
     print(len(words))
+    print(words)
     for word in words:
         Token1 = Token.Token()
         if ('\n' in word):
@@ -70,11 +71,12 @@ def lexer(filename):
                 # word = ""
         if(word in WordSplitter.seperators):
             if(word == '\n'):
-                Token1.CP = "CharConst"
-                Token1.VP = "LineBreak"
-                Token1.LineNo = lineNo
-                Tokens.append(Token1)
+                #Token1.CP = "CharConst"
+                #Token1.VP = "LineBreak"
+                #Token1.LineNo = lineNo
+                # Tokens.append(Token1)
                 # word = ""
+                pass
             else:
                 Token1.VP = word
                 if(word in assignments):

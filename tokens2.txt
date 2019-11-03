@@ -1,0 +1,222 @@
+Token 0:
+Class: ID
+Value: interface
+Line: 1
+
+
+Token 1:
+Class: :
+Value: 
+Line: 1
+
+
+Token 2:
+Class: :
+Value: 
+Line: 1
+
+
+Token 3:
+Class: ID
+Value: A_B_C
+Line: 1
+
+
+Token 4:
+Class: CharConst
+Value: LineBreak
+Line: 2
+
+
+Token 5:
+Class: while
+Value: 
+Line: 2
+
+
+Token 6:
+Class: (
+Value: 
+Line: 2
+
+
+Token 7:
+Class: Invalid Lexeone
+Value: a.b.c
+Line: 2
+
+
+Token 8:
+Class: ROP
+Value: <
+Line: 2
+
+
+Token 9:
+Class: ROP
+Value: <
+Line: 2
+
+
+Token 10:
+Class: ROP
+Value: <
+Line: 2
+
+
+Token 11:
+Class: ROP
+Value: <
+Line: 2
+
+
+Token 12:
+Class: ROP
+Value: <=
+Line: 2
+
+
+Token 13:
+Class: Assign
+Value: =
+Line: 2
+
+
+Token 14:
+Class: FloatConst
+Value: 78.65
+Line: 2
+
+
+Token 15:
+Class: CharConst
+Value: LineBreak
+Line: 3
+
+
+Token 16:
+Class: ID
+Value: b
+Line: 3
+
+
+Token 17:
+Class: PM
+Value: +
+Line: 3
+
+
+Token 18:
+Class: Invalid Lexeone
+Value: ++
+Line: 3
+
+
+Token 19:
+Class: Assign
+Value: =
+Line: 3
+
+
+Token 20:
+Class: Invalid Lexeone
+Value: 56.75ab7.11
+Line: 3
+
+
+Token 21:
+Class: StringConst
+Value: abc
+Line: 4
+
+
+Token 22:
+Class: ID
+Value: a
+Line: 4
+
+
+Token 23:
+Class: Assign
+Value: =
+Line: 4
+
+
+Token 24:
+Class: ID
+Value: b
+Line: 4
+
+
+Token 25:
+Class: Assign
+Value: =
+Line: 4
+
+
+Token 26:
+Class: ID
+Value: c
+Line: 4
+
+
+Token 27:
+Class: CharConst
+Value: LineBreak
+Line: 5
+
+
+Token 28:
+Class: DT
+Value: string
+Line: 5
+
+
+Token 29:
+Class: ID
+Value: s
+Line: 5
+
+
+Token 30:
+Class: Assign
+Value: =
+Line: 5
+
+
+Token 31:
+Class: StringConst
+Value: \\\
+Line: 5
+
+
+Token 32:
+Class: PM
+Value: +
+Line: 5
+
+
+Token 33:
+Class: CharConst
+Value: LineBreak
+Line: 6
+
+
+Token 34:
+Class: return
+Value: 
+Line: 6
+
+
+Token 35:
+Class: Invalid Lexeone
+Value: a&&
+Line: 6
+
+
+Token 36:
+Class: ROP
+Value: ==
+Line: 6
+
+

@@ -2,20 +2,19 @@ import regex
 import WordSplitter
 import LA
 
-txt = "void main()\n{\n/*int a= -5.58*-3;*/\nInt a++=='ajfjds as \" ae=9987'\nchar b='a;\n}"
 
-# stri = LA.readFile("data.txt")
-words = WordSplitter.BreakWord(txt)
-print(words)
+txt = 'my name is "15.23\n12.ab6.24'
+bla = WordSplitter.BreakWord(txt)
+print(bla)
 
-
+'''
 TKs = LA.lexer('code.txt')
 print(len(TKs))
 for T in TKs:
     print(T.CP)
 
 i = 0
-with open("tokens.txt", "a") as myfile:
+with open("tokens3.txt", "a") as myfile:
     for T in TKs:
         myfile.write("Token "+str(i)+":")
         myfile.write("\n")
@@ -28,3 +27,4 @@ with open("tokens.txt", "a") as myfile:
         myfile.write("\n")
         myfile.write("\n")
         i += 1
+'''
