@@ -80,7 +80,7 @@ def lexer(filename):
             else:
                 Token1.VP = word
                 if(word in assignments):
-                    Token1.CP = "Assign"
+                    Token1.CP = "AOP"
                 elif(word in MDM):
                     Token1.CP = "MDM"
                 elif(word in PM):

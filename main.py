@@ -1,18 +1,23 @@
 import regex
 import WordSplitter
 import LA
+import SA
 
 
-txt = 'my name is "15.23\n12.ab6.24'
-bla = WordSplitter.BreakWord(txt)
-print(bla)
+# txt = 'my name is "15.23\n12.ab6.24'
+# bla = WordSplitter.BreakWord(txt)
+# print(bla)
 
-'''
-TKs = LA.lexer('code.txt')
+
+TKs = LA.lexer('SAtest.txt')
 print(len(TKs))
 for T in TKs:
     print(T.CP)
 
+print('\n')
+SA.SA(TKs)
+
+'''
 i = 0
 with open("tokens3.txt", "a") as myfile:
     for T in TKs:
