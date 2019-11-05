@@ -127,6 +127,11 @@ def lexer(filename):
                     Token1.LineNo = lineNo
                     Tokens.append(Token1)
                     # word = ""
+    Token11 = Token.Token()
+    Token11.CP = "$"
+    Token11.VP = '$'
+    Token11.LineNo = lineNo
+    Tokens.append(Token11)
     return Tokens
 
 

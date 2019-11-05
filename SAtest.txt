@@ -1,1 +1,8 @@
-int aa=5;
+main()
+{
+    int a=5;
+    while(a>0)
+    {
+        a-=1;
+    }
+}
