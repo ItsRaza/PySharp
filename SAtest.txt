@@ -1,7 +1,9 @@
-class A
+def fn(int a,float b)
 {
-    public:
-    int a;
+    for(int a=0;a>10;a+=1)
+    {
+        a-=2;
+    }
 }
 main()
 {

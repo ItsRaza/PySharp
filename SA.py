@@ -91,7 +91,8 @@ def C2(TKs):
     global GI
     C2_sel = ['ID', 'IntConst', 'FloatConst',
         'CharConst', 'StringConst', '(', 'True', 'False']
-    if(TK[GI].CP in C2_sel):
+    print(GI)
+    if(TKs[GI].CP in C2_sel):
         if(OE(TKs)):
             return True
         return True
@@ -102,10 +103,10 @@ def C2(TKs):
 def C3(TKs):
     global GI
     C3_sel = ['ID', 'this', ')']
-    if(TK[GI].CP in C3_sel):
+    if(TKs[GI].CP in C3_sel):
         if(AssignSt(TKs)):
             return True
-        elif(IncDecSt):
+        elif(IncDecSt(TKs)):
             return True
         return True
     else:
@@ -119,6 +120,7 @@ def NewIncDecSt(TKs):
             if(TKs[GI].CP == ','):
                 GI += 1
                 return True
+            return True
     else:
         return False
 
@@ -133,20 +135,20 @@ def IncDec(TKs):
 
 def ForOpts(TKs):
     global GI
-    if(TK[GI].CP=='(' or TK[GI].CP=='ID'):
-        if(TK[GI].CP=='('):
+    if(TKs[GI].CP=='(' or TKs[GI].CP=='ID'):
+        if(TKs[GI].CP=='('):
             GI+=1
             if(C1(TKs)):
                 if(C2(TKs)):
-                    if(TK[GI].CP==';'):
+                    if(TKs[GI].CP==';'):
                         GI+=1
                         if(C3(TKs)):
-                            if(TK[GI].CP==')'):
+                            if(TKs[GI].CP==')'):
                                 GI+=1
                                 return True
-        elif(TK[GI].CP=='ID'):
+        elif(TKs[GI].CP=='ID'):
             GI+=1
-            if(TK[GI].CP=='in'):
+            if(TKs[GI].CP=='in'):
                 if(OE(TKs)):
                     return True
     else:
@@ -155,6 +157,7 @@ def ForOpts(TKs):
 def ForSt(TKs):
     global GI
     if(TKs[GI].CP=='for'):
+        GI+=1
         if(ForOpts(TKs)):
             if(Body(TKs)):
                 return True
@@ -224,6 +227,8 @@ def RetTypes(TKs):
     global GI
     RetTypes_sel = ['DT', 'tuple', 'dict', 'ID', 'var', 'void']
     if(TKs[GI].CP in RetTypes_sel):
+        if(TKs[GI].CP=='ID'):
+            return True
         if(ToDec(TKs)):
             return True
         elif(TKs[GI].CP == 'void'):
@@ -269,6 +274,7 @@ def PLOpts2(TKs):
         if(PLOpts(TKs)):
             if(PL(TKs)):
                 return True
+            return True
     else:
         return False
 
@@ -282,7 +288,8 @@ def PL(TKs):
             if(TKs[GI].CP == ','):
                 GI += 1
                 return True
-        return True
+        if(TKs[GI].CP==')'):
+            return True
     return False
 
 
@@ -309,16 +316,17 @@ def FnDec(TKs):
     global GI
     if(TKs[GI].CP == 'def'):
         GI += 1
-        if(StaticOp(Tks)):
-            if(RetTypes(Tks)):
+        if(StaticOp(TKs)):
+            if(RetTypes(TKs)):
                 if(TKs[GI].CP == 'ID'):
                     GI += 1
                     if(TKs[+GI].CP == '('):
                         GI += 1
-                        if(PL(Tks)):
-                            GI += 1
+                        if(PL(TKs)):
+                            # GI += 1
                             if(TKs[GI].CP == ')'):
-                                if(Body(Tks)):
+                                GI+=1
+                                if(Body(TKs)):
                                     return True
     return False
 
@@ -928,7 +936,7 @@ def FIOpts(TKs):
     global GI
     print(GI)
     FIOpts_sel = ['AOP', '(', '[', '.',',','ID', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False',';']
+              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False',';',')']
     if(TKs[GI].CP in FIOpts_sel):
         # GI += 1
         if(IncDecOp(TKs)):
@@ -999,7 +1007,7 @@ def BodyOpts(TKs):
     BodyOpts_sel=[';','{','ID','this','while','if','for','return','def',
                 'AM','static','abstract','class','DT','tuple','dict','ID','var','main','$']
     if(TKs[GI].CP in BodyOpts_sel):
-        if(Body(Tks)):
+        if(Body(TKs)):
             return True
         return True
     else:
@@ -1070,4 +1078,4 @@ def SA(TKs):
     if(Start(TKs)):
         print("Valid Syntax")
     else:
-        print("Syntax Error at Line Number ", TKs[GI].LineNo)
+        print("Syntax Error at Line Number ", TKs[GI].LineNo-1)
