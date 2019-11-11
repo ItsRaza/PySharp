@@ -15,6 +15,7 @@ for T in TKs:
     print(T.CP)
 
 print('\n')
+
 SA.SA(TKs)
 
 '''

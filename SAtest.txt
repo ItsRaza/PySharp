@@ -1,8 +1,9 @@
+class A
+{
+    public:
+    int a;
+}
 main()
 {
-    int a=5;
-    while(a>0)
-    {
-        a-=1;
-    }
+    int a;
 }

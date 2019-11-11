@@ -175,9 +175,9 @@ def SST(TKs):
                'static', 'DT', 'tuple', 'dict', 'ID', 'var']
     if(TKs[GI].CP in SST_sel):
         # GI += 1
-        if(NewDec(TKs)):
+        if(NewAssignSt(TKs)):
             return True
-        elif (NewAssignSt(TKs)):
+        elif (NewDec(TKs)):
             return True
         elif (WhileSt(TKs)):
             return True
@@ -203,6 +203,7 @@ def MST(TKs):
         if(SST(TKs)):
             if(MST(TKs)):
                 return True
+        return True
     else:
         return False
 
@@ -288,7 +289,7 @@ def PL(TKs):
 def Body(TKs):
     global GI
     Body_sel = [';', '{', 'ID', 'this', 'while', 'if', 'for', 'return']
-    if(TKs[GI].CP == ':' in Body_sel):
+    if(TKs[GI].CP in Body_sel):
         if(TKs[GI].CP == ';'):
             GI += 1
         elif(SST(TKs)):
@@ -321,6 +322,12 @@ def FnDec(TKs):
                                     return True
     return False
 
+def ClassTypes(TKs):
+    global GI
+    ClassTypes_sel=['AM','static','abstract']
+    if(TKs[GI].CP=='AM' or TKs[GI].CP=='static' or TKs[GI].CP=='abstract'):
+        GI+=1
+        return True
 
 def ClassTypesL(TKs):
     global GI
@@ -355,7 +362,7 @@ def InheriOPts(TKs):
     else:
         return False
 
-def Inheri(Tks):
+def Inheri(TKs):
     global GI
     if(TKs[GI].CP == ':' or TKs[GI].CP == '{'):
         if(TKs[GI].CP == ':'):
@@ -389,7 +396,7 @@ def Constructor(TKs):
 
 def ClassBodyOpts2(TKs):
     global GI
-    ClassBodyOpts2_sel=['AM','VO']
+    ClassBodyOpts2_sel=['AM','VO','ID','DT']
     if(TKs[GI].CP in ClassBodyOpts2_sel):
         if(FnDec(TKs)):
             if(FnInheri(TKs)):
@@ -430,6 +437,7 @@ def ClassBodyOpts(TKs):
                 if(ClassBodyOpts2(TKs)):
                     if(ClassBodyOpts(TKs)):
                         return True
+                    return True
         elif(AMVOL(TKs)):
             if(ClassBodyOpts2(TKs)):
                 return True
@@ -531,7 +539,7 @@ def xOpts2(TKs):
 
 def x(TKs):
     global GI
-    x_sel=['[','.','AOP']
+    x_sel=['[','.','AOP',',']
     if(TKs[GI].CP in x_sel):
         if(TKs[GI].CP=='['):
             GI+=1
@@ -543,7 +551,7 @@ def x(TKs):
         elif(TKs[GI].CP=='.'):
             GI+=1
             if(xOpts2(TKs)):
-                return True
+                return True     
         return True
     else:
         return False
@@ -638,7 +646,9 @@ def InitOpts(TKs):
 
 def Init(TKs):
     global GI
-    if(TKs[GI].CP=='AOP'):
+    Init_sel=['ID', 'IntConst',
+             'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False','AOP',',']
+    if(TKs[GI].CP in Init_sel):
         if(TKs[GI].CP=='AOP'):
             GI+=1
             if(InitOpts(TKs)):
@@ -652,39 +662,42 @@ def Init(TKs):
 def FI2Opts(TKs):
     global GI
     FI2Opts_sel=['ID', 'IntConst',
-             'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+             'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False','static','DT','tuple','dict','var','this',',']
     if(TKs[GI].CP in FI2Opts_sel):
-        if(OEL(TKs)):
+        if(OEL2(TKs)):
             return True
     else:
         return False
 
 def FactorID2(TKs):
     global GI
-    FactorID2_sel = ['[', '.']
+    FactorID2_sel = ['[', '.','AOP',',']
     if(TKs[GI].CP in FactorID2_sel):
         if(x(TKs)):
             if(Init(TKs)):
-                if(FI2Opts(Tks)):
+                if(FI2Opts(TKs)):
                     return True
     else:
         return False
 
+def FCOptsL(TKs):
+    global GI
+    FCOptsL_sel=['AOP','ID','IntConst','FloatConst','CharConst','StringConst','not','(','True','False']
+    if(TKs[GI].CP in FCOptsL_sel):
+        if(Init(TKs)):
+            if(OEL(TKs)):
+                return True
+        elif(OE(TKs)):
+            if(OEL2(TKs)):
+                return True
+
 def FCOpts(TKs):
     global GI
-    FCOpts_sel=['ID', 'IntConst',
-             'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
-    if(TKs[GI].CP in FCOpts_sel):
-        if(TK[GI].CP=='ID'):
-            GI+=1
-            if(Init(TKs)):
-                if(OEL(TKs)):
-                    return True
-        elif(OE(TKs)):
-            if(OEL2(TKS)):
+    if(TKs[GI].CP=='ID'):
+        if(FactorID(TKs)):
+            if(FCOptsL(TKs)):
                 return True
-    else:
-        return False
+    return False
 
 def FactorComma(TKs):
     global GI
@@ -746,7 +759,8 @@ def T(TKs):
     T_sel = ['ID', 'IntConst',
              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in T_sel):
-        if(FactorID(TKs)):
+        if(TKs[GI].CP=='ID'):
+            GI+=1
             return True
         elif(TKs[GI].CP=='IntConst' or TKs[GI].CP=='FloatConst' or TKs[GI].CP=='CharConst' or TKs[GI].CP=='StringConst'):
             GI+=1
@@ -913,7 +927,8 @@ def IncDecOp(TKs):
 def FIOpts(TKs):
     global GI
     print(GI)
-    FIOpts_sel = ['AOP', '(', '[', '.']
+    FIOpts_sel = ['AOP', '(', '[', '.',',','ID', 'IntConst',
+              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False',';']
     if(TKs[GI].CP in FIOpts_sel):
         # GI += 1
         if(IncDecOp(TKs)):
@@ -927,6 +942,9 @@ def FIOpts(TKs):
                     return True
         elif FactorID2(TKs):
             return True
+        elif(OE(TKs)):
+            return True
+        return True
     else:
         return False
 
@@ -942,6 +960,7 @@ def FactorID(TKs):
 
 
 def Dec(TKs):
+    global GI
     Dec_sel = ['static', 'tuple', 'DT', 'dict', 'ID', 'var']
     if(TKs[GI].CP in Dec_sel):
         if(StaticOp(TKs)):
@@ -964,16 +983,19 @@ def NewDec(TKs):
 
 
 def GlobalDefs(TKs):
+    global GI
     GlobalDefs_sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var']
     print(TKs[GI].CP)
     if(TKs[GI].CP in GlobalDefs_sel):
         if(NewDec(TKs)):
             if(GlobalDefs(TKs)):
                 return True
+            return True
     else:
         return False
 
 def BodyOpts(TKs):
+    global GI
     BodyOpts_sel=[';','{','ID','this','while','if','for','return','def',
                 'AM','static','abstract','class','DT','tuple','dict','ID','var','main','$']
     if(TKs[GI].CP in BodyOpts_sel):
@@ -993,6 +1015,7 @@ def FnDec2(TKs):
         return False
 
 def Defs(TKs):
+    global GI
     Defs_sel = ['def', 'AM', 'static', 'abstract', 'class',
                 'DT', 'tuple', 'dict', 'ID', 'var', 'main', '$']
     if(TKs[GI].CP in Defs_sel):
@@ -1000,13 +1023,18 @@ def Defs(TKs):
         if(FnDec2(TKs)):
             if(Defs(TKs)):
                 return True
+            return True
         elif(ClassDec(TKs)):
             if(Defs(TKs)):
                 return True
+            return True
         elif(GlobalDefs(TKs)):
             if(Defs(TKs)):
                 return True
-        return True
+            return True
+        elif(TKs[GI].CP=='$'):
+            return True
+        # return True
     else:
         return False
 
@@ -1032,7 +1060,7 @@ def Start(TKs):
                                     GI += 1
                                     if(Defs(TKs)):
                                         return True
-        return True
+        # return True
     else:
         return False
 
@@ -1042,4 +1070,4 @@ def SA(TKs):
     if(Start(TKs)):
         print("Valid Syntax")
     else:
-        print("Syntax Error at Line Number {}", TKs[GI].LineNo)
+        print("Syntax Error at Line Number ", TKs[GI].LineNo)
