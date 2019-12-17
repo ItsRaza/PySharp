@@ -1,0 +1,26 @@
+def int a(int a,int b)
+{
+    int a;
+    if(a<1)
+    {
+        if(b<3)
+        {
+            b+=1;
+        }
+        else
+        {
+            b+=1;
+        }
+    }
+    for(int a=1;a<5;a+=1)
+    {
+        a+=1;
+    }
+}
+main()
+{
+    Book B1;
+    n=B1.Name.get();
+    a(2*2+8);
+    int a,b,c=0;
+}

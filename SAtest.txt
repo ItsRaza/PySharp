@@ -1,11 +1,52 @@
-def fn(int a,float b)
+class Book
 {
-    for(int a=0;a>10;a+=1)
-    {
-        a-=2;
-    }
+public:
+    int id;
+    private:
+    string name;
+public :def void fn()
+{
+    return 1;
+}
+
+    
+}
+def void fn()
+{
+    return 1;
+}
+def void fn()
+{
+    return 1;
+}
+def void fn()
+{
+    return 1;
 }
 main()
 {
-    int a;
+    int a,b;
+    arr=[1,2,3];
+    a=fn().f[4].b[4];
+    Book B1=new Book();
+    fn(a,b,c,d);
+    if(a<=b.c.cs[3].h(a.b,b))
+    {
+        a[8].b().b+=1;
+    }
+    elif(b<a)
+    {
+        b+=1;
+    }
+}
+class Book
+{
+    public:
+    int id;
+    private:
+    string name;
+}
+def void fn()
+{
+    return 1;
 }

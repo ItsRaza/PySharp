@@ -36,17 +36,17 @@ def IfElseOpts(TKs):
     global GI
     IfElseOpts_sel = ['ID', 'this', 'while',
         'if', 'for', 'return', 'else', 'elif']
-    if(TK[GI].CP in IfElseOpts_sel):
-        if(TK[GI].CP == 'else'):
+    if(TKs[GI].CP in IfElseOpts_sel):
+        if(TKs[GI].CP == 'else'):
             GI += 1
             if(Body(TKs)):
                 return True
-        elif(TK[GI].CP == 'else'):
+        elif(TKs[GI].CP == 'elif'):
             GI += 1
-            if(TK[GI].CP == '('):
+            if(TKs[GI].CP == '('):
                 GI += 1
                 if(OE(TKs)):
-                    if(TK[GI].CP == ')'):
+                    if(TKs[GI].CP == ')'):
                         GI += 1
                         if(Body(TKs)):
                             if(IfElseOpts(TKs)):
@@ -76,11 +76,14 @@ def IfElseSt(TKs):
 def C1(TKs):
     global GI
     C1_sel = ['this', 'static', 'DT', 'tuple',
-        'dict', 'ID', 'var', 'not', 'True', 'False']
+        'dict', 'ID', 'var', 'not', 'True', 'False',';']
     if(TKs[GI].CP in C1_sel):
         if(NewDec(TKs)):
             return True
         elif(NewAssignSt(TKs)):
+            return True
+        elif (TKs[GI].CP==';'):
+            GI+=1
             return True
         return True
     else:
@@ -90,11 +93,14 @@ def C1(TKs):
 def C2(TKs):
     global GI
     C2_sel = ['ID', 'IntConst', 'FloatConst',
-        'CharConst', 'StringConst', '(', 'True', 'False']
+        'CharConst', 'StringConst', '(', 'True', 'False',';']
     print(GI)
     if(TKs[GI].CP in C2_sel):
         if(OE(TKs)):
             return True
+        # elif (TKs[GI].CP==';'):
+        #     GI+=1
+        #     return True
         return True
     else:
         return False
@@ -106,7 +112,7 @@ def C3(TKs):
     if(TKs[GI].CP in C3_sel):
         if(AssignSt(TKs)):
             return True
-        elif(IncDecSt(TKs)):
+        elif(NewIncDecSt(TKs)):
             return True
         return True
     else:
@@ -167,8 +173,11 @@ def ForSt(TKs):
 def RetSt(TKs):
     global GI
     if(TKs[GI].CP=='return'):
+        GI+=1
         if(OE(TKs)):
-            return True
+            if(TKs[GI].CP==';'):
+                GI+=1
+                return True
     else:
         return False
 
@@ -176,6 +185,7 @@ def SST(TKs):
     global GI
     SST_sel = ['ID', 'this', 'while', 'if', 'for', 'return',
                'static', 'DT', 'tuple', 'dict', 'ID', 'var']
+    print(GI)
     if(TKs[GI].CP in SST_sel):
         # GI += 1
         if(NewAssignSt(TKs)):
@@ -213,7 +223,7 @@ def MST(TKs):
 
 def StaticOp(TKs):
     global GI
-    StaticOp_sel = ['static', 'DT', 'tuple', 'ID', 'var']
+    StaticOp_sel = ['static', 'DT', 'tuple', 'ID', 'var','void']
     if(TKs[GI].CP in StaticOp_sel):
         if(TKs[GI].CP == 'static'):
             GI += 1
@@ -404,7 +414,7 @@ def Constructor(TKs):
 
 def ClassBodyOpts2(TKs):
     global GI
-    ClassBodyOpts2_sel=['AM','VO','ID','DT']
+    ClassBodyOpts2_sel=['AM','VO','ID','DT','def']
     if(TKs[GI].CP in ClassBodyOpts2_sel):
         if(FnDec(TKs)):
             if(FnInheri(TKs)):
@@ -497,6 +507,7 @@ def ToDec(TKs):
     ToDec_sel = ['tuple', 'DT', 'dict', 'ID', 'var']
     if(TKs[GI].CP in ToDec_sel):
         GI += 1
+        print(GI)
         return True
     return False
 
@@ -507,7 +518,10 @@ def xOpts(TKs):
     if(TKs[GI].CP in xOpts_sel):
         if(TKs[GI].CP=='IntConst'):
             GI+=1
-            return True
+            if(FactorComma(TKs)):
+                if(xOpts(TKs)):
+                    return True
+                return True
         return True
     else:
         return False
@@ -688,23 +702,24 @@ def FactorID2(TKs):
     else:
         return False
 
-def FCOptsL(TKs):
-    global GI
-    FCOptsL_sel=['AOP','ID','IntConst','FloatConst','CharConst','StringConst','not','(','True','False']
-    if(TKs[GI].CP in FCOptsL_sel):
-        if(Init(TKs)):
-            if(OEL(TKs)):
-                return True
-        elif(OE(TKs)):
-            if(OEL2(TKs)):
-                return True
+# def FCOptsL(TKs):
+#     global GI
+#     FCOptsL_sel=['AOP','ID','IntConst','FloatConst','CharConst','StringConst','not','(','True','False']
+#     if(TKs[GI].CP in FCOptsL_sel):
+#         if(Init(TKs)):
+#             if(OEL(TKs)):
+#                 return True
+#         elif(OE(TKs)):
+#             if(OEL2(TKs)):
+#                 return True
 
 def FCOpts(TKs):
     global GI
-    if(TKs[GI].CP=='ID'):
-        if(FactorID(TKs)):
-            if(FCOptsL(TKs)):
-                return True
+    FCOptsL_sel=['static','DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
+              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    if(TKs[GI].CP in FCOptsL_sel):
+        if(OEL(TKs)):
+            return True
     return False
 
 def FactorComma(TKs):
@@ -767,8 +782,9 @@ def T(TKs):
     T_sel = ['ID', 'IntConst',
              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in T_sel):
-        if(TKs[GI].CP=='ID'):
-            GI+=1
+        if(FactorID(TKs)):
+            if(OE(TKs)):
+                return True
             return True
         elif(TKs[GI].CP=='IntConst' or TKs[GI].CP=='FloatConst' or TKs[GI].CP=='CharConst' or TKs[GI].CP=='StringConst'):
             GI+=1
@@ -936,10 +952,15 @@ def FIOpts(TKs):
     global GI
     print(GI)
     FIOpts_sel = ['AOP', '(', '[', '.',',','ID', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False',';',')']
+              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False',';',')','ROP']
     if(TKs[GI].CP in FIOpts_sel):
         # GI += 1
         if(IncDecOp(TKs)):
+            if(OE(TKs)):
+                return True
+            if(x(TKs)):
+                return True
+        if(TKs[GI].CP=='ROP'):
             if(OE(TKs)):
                 return True
         elif(TKs[GI].CP == '('):
@@ -1040,6 +1061,8 @@ def Defs(TKs):
             if(Defs(TKs)):
                 return True
             return True
+        elif (TKs[GI].CP=='main'):
+            return True
         elif(TKs[GI].CP=='$'):
             return True
         # return True
@@ -1078,4 +1101,4 @@ def SA(TKs):
     if(Start(TKs)):
         print("Valid Syntax")
     else:
-        print("Syntax Error at Line Number ", TKs[GI].LineNo-1)
+        print("Syntax Error at Line Number ", TKs[GI].LineNo)
