@@ -2,35 +2,44 @@ import regex
 import WordSplitter
 import LA
 import SA
+import SymbolTable
+import ClassDataTable
+import ClassTable
+
+# st = SymbolTable.SymbolTable()
+
+# st.InsertST('a', 'int', 0)
+# st.InsertST('a', 'int', 0)
+# st.InsertST('c', 'int', 0)
+# # st.PrintST()
+# # T = st.LookupST('c', 0)
+# # print(T)
+
+# cdt2 = ClassDataTable.ClassDataTable()
+# cdt = ClassDataTable.ClassDataTable()
+# cdt.InsertCDT('a', 'int', 'public', '')
+# cdt.InsertCDT('b', 'int', 'private', 'virtual')
+# cdt.InsertCDT('fn', 'int,int->void', 'public', '')
+# # cdt.PrintCDT()
+# # print('\n')
+# # cdt2.PrintCDT()
+
+# ct = ClassTable.ClassTable()
+# ct.InsertCT('foo', 'bar')
+# ct.InsertCDT('foo', 'fn', 'int,int->void', 'public', '')
+# ct.InsertCDT('foo', 'fn2', 'int->int', 'public', '')
+# ct.InsertCT('foo2', 'bar2')
+# ct.InsertCDT('foo2', 'f', 'void->void', 'private', 'override')
+# ct.PrintCT()
+
+# ct.LookupCDT('foo', 'fn2', 'int->int', 'public', '')
 
 
-# txt = 'my name is "15.23\n12.ab6.24'
-# bla = WordSplitter.BreakWord(txt)
-# print(bla)
+# TKs = LA.lexer('SAtest.txt')
+# print(len(TKs))
+# for T in TKs:
+#     print(T.CP)
 
+# print('\n')
 
-TKs = LA.lexer('SAtest.txt')
-print(len(TKs))
-for T in TKs:
-    print(T.CP)
-
-print('\n')
-
-SA.SA(TKs)
-
-'''
-i = 0
-with open("tokens3.txt", "a") as myfile:
-    for T in TKs:
-        myfile.write("Token "+str(i)+":")
-        myfile.write("\n")
-        myfile.write("Class: "+T.CP)
-        myfile.write("\n")
-        myfile.write("Value: "+T.VP)
-        myfile.write("\n")
-        myfile.write("Line: "+str(T.LineNo))
-        myfile.write("\n")
-        myfile.write("\n")
-        myfile.write("\n")
-        i += 1
-'''
+# SA.SA(TKs)

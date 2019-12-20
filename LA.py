@@ -59,7 +59,7 @@ def lexer(filename):
                         Token1.CP = 'VO'
                     else:
                         Token1.CP = temp
-                        Token1.VP = ""
+                        # Token1.VP = ""
                     Token1.LineNo = lineNo
                     Tokens.append(Token1)
                     # word = ""
@@ -89,7 +89,7 @@ def lexer(filename):
                     Token1.CP = "ROP"
                 else:
                     Token1.CP = word
-                    Token1.VP = ""
+                    # Token1.VP = ""
                 Token1.LineNo = lineNo
                 Tokens.append(Token1)
                 # word = ""

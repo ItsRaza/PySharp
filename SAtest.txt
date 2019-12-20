@@ -11,7 +11,7 @@ public :def void fn()
 
     
 }
-def void fn()
+def void fn(int a float b)
 {
     return 1;
 }
@@ -25,6 +25,7 @@ def void fn()
 }
 main()
 {
+    fn(1,a=2,3+8)
     int a,b;
     arr=[1,2,3];
     a=fn().f[4].b[4];
