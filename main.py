@@ -2,6 +2,7 @@ import regex
 import WordSplitter
 import LA
 import SA
+import Semantic
 import SymbolTable
 import ClassDataTable
 import ClassTable
@@ -35,11 +36,12 @@ import ClassTable
 # ct.LookupCDT('foo', 'fn2', 'int->int', 'public', '')
 
 
-# TKs = LA.lexer('SAtest.txt')
-# print(len(TKs))
-# for T in TKs:
-#     print(T.CP)
+TKs = LA.lexer('SETest1.txt')
+print(len(TKs))
+for T in TKs:
+    print(T.CP)
 
-# print('\n')
+print('\n')
 
-# SA.SA(TKs)
+
+Semantic.SA(TKs)

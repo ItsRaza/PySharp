@@ -1,6 +1,6 @@
 def int a(int a,int b)
 {
-    int a;
+    int a+=5;
     if(a<1)
     {
         if(b<3)
@@ -22,5 +22,5 @@ main()
     Book B1;
     n=B1.Name.get();
     a(2*2+8);
-    int a,b,c=0;
+    int a=5+9+a+=8;
 }

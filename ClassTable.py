@@ -24,13 +24,14 @@ class ClassTable:
         temp.Parent = Par
         temp.ref = ClassDataTable.ClassDataTable()
         CT.append(temp)
+        print(temp.Name, ' Inserted in Class Table')
         return True
 
     def LookupCT(self, N):
         for s in CT:
             if(N == s.Name):
                 print(N+" found")
-                return s.Type
+                return s.Name
 
     def PrintCT(self):
         for s in CT:
@@ -41,6 +42,7 @@ class ClassTable:
         req = Return(CN)
         req.ref.InsertCDT2(N, T, AM, TM)
 
-    def LookupCDT(self, CN, N, T, AM, TM):
+    def LookupCDT(self, CN, N, AM, TM):
         req = Return(CN)
-        req.ref.LookupCDT2(N, T, AM, TM)
+        T = req.ref.LookupCDT2(N, AM, TM)
+        return T

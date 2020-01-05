@@ -95,13 +95,13 @@ def lexer(filename):
                 # word = ""
         if(isDigit(word[0]) or ((word[0] == '+' or word[0] == '-') and (word not in WordSplitter.seperators))):
             if(regex.isIntConstant(word)):
-                Token1.CP = "IntConst"
+                Token1.CP = "int"
                 Token1.VP = word
                 Token1.LineNo = lineNo
                 Tokens.append(Token1)
                 # word = ""
             elif(regex.isFloatConstant(word)):
-                Token1.CP = "FloatConst"
+                Token1.CP = "float"
                 Token1.VP = word
                 Token1.LineNo = lineNo
                 Tokens.append(Token1)
@@ -116,13 +116,13 @@ def lexer(filename):
             if(regex.isStringConstant(word[1:-1])):
                 if(len(word) == 3)or(len(word) == 4):
                     if(regex.isCharConstant(word[1:-1])):
-                        Token1.CP = "CharConst"
+                        Token1.CP = "char"
                         Token1.VP = word[1:-1]
                         Token1.LineNo = lineNo
                         Tokens.append(Token1)
                         # word = ""
                 else:
-                    Token1.CP = "StringConst"
+                    Token1.CP = "string"
                     Token1.VP = word[1:-1]
                     Token1.LineNo = lineNo
                     Tokens.append(Token1)

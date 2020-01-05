@@ -3,18 +3,87 @@ import ClassTable
 import SymbolTable
 import ClassDataTable
 import regex
+import WordSplitter
 
 CLSTBL=ClassTable.ClassTable()
 SYMTBL=SymbolTable.SymbolTable()
+stack=[]
+
 
 GI = 0
+stack_Scope = []
+Scope_no    = 0 
 
+def CreateScope():
+    global Scope_no
+    stack_Scope.append(Scope_no)
+    Scope_no += 1
+    return (Scope_no - 1)
 
-def NewAssignSt(TKs):
+def DestroyScope():
+    s=stack_Scope.pop()
+    if(stack_Scope != None):
+        return s
+    else:
+        return -1
+
+def FnLookup(N,para,CN,AM,TM,S,gbl):
+    if(CN!=''and gbl!=False):
+        T=CLSTBL.LookupCDT(CN,N,AM,TM)
+        if(T==''):
+            T=SYMTBL.FnLookupST(N,S)
+        # return T
+    elif(CN!='' and gbl==False):
+        T=CLSTBL.LookupCDT(CN,N,AM,TM)
+        # return T
+    elif(CN==''):
+        T=SYMTBL.FnLookupST(N,S)
+        if(T!=para):
+            T=''
+        # return T
+    if(T=='' or T== None):
+        return False
+    else:
+        return T
+
+def Compatibility(LT,RT,op):
+    rT=''
+    if(op=='or' or op=='and'):
+        rT='bool'
+        return rT
+    if(op=='==' or op=='!=' or op=='>=' or op=='<=' or op=='<'or op=='>'):
+        rT='bool'
+        return rT
+    if(op=='=' or op=='+=' or op=='-=' or op=='*=' or op=='/='):
+        if(LT==RT):
+            return LT
+    if(op=='.'):
+        if(regex.isIdentifier(LT)):
+            rT=RT
+            return rT
+    if((LT=='int' and RT=='int') or (RT=='int' and LT=='int')):
+        if(op=='*' or op=='/' or op=='-' or op=='+'):
+            rT='int'
+            return rT
+    if((LT=='int' and RT=='float') or (RT=='int' and LT=='float')):
+        if(op=='*' or op=='/' or op=='-' or op=='+'):
+            rT='float'
+            return rT
+    if((LT=='string' and RT=='string')):
+        if(op=='+'):
+            rT='string'
+            return rT
+    if((LT=='char' and RT=='char')):
+        if(op=='+'):
+            rT='char'
+            return rT
+    
+        
+def NewAssignSt(TKs,CN,AM,T,TM,S):
     global GI
     NewAssignSt_sel = ['ID', 'this']
     if(TKs[GI].CP in NewAssignSt_sel):
-        if(AssignSt(TKs)):
+        if(AssignSt(TKs,CN,AM,T,TM,S)):
             if(TKs[GI].CP == ';'):
                 GI += 1
                 return True
@@ -97,8 +166,8 @@ def C1(TKs):
 
 def C2(TKs):
     global GI
-    C2_sel = ['ID', 'IntConst', 'FloatConst',
-        'CharConst', 'StringConst', '(', 'True', 'False',';']
+    C2_sel = ['ID', 'int', 'float',
+        'char', 'string', '(', 'True', 'False',';']
     print(GI)
     if(TKs[GI].CP in C2_sel):
         if(OE(TKs)):
@@ -124,10 +193,10 @@ def C3(TKs):
         return False
 
 
-def NewIncDecSt(TKs):
+def NewIncDecSt(TKs,CN,AM,TM,T,S):
     global GI
     if(TKs[GI].CP == 'ID'):
-        if(IncDec(TKs)):
+        if(IncDec(TKs,CN,AM,TM,T,S)):
             if(TKs[GI].CP == ','):
                 GI += 1
                 return True
@@ -135,10 +204,10 @@ def NewIncDecSt(TKs):
     else:
         return False
 
-def IncDec(TKs):
+def IncDec(TKs,CN,AM,TM,T,S):
     global GI
     if(TKs[GI].CP=='ID'):
-        if(FactorID(TKs)):
+        if(FactorID(TKs,CN,AM,TM,T,S)):
             return True
     else:
         return False       
@@ -175,27 +244,31 @@ def ForSt(TKs):
     else:
         return False
 
-def RetSt(TKs):
+def RetSt(TKs,CN,AM,T,TM,S):
     global GI
     if(TKs[GI].CP=='return'):
         GI+=1
-        if(OE(TKs)):
+        if(OE(TKs,CN,AM,T,TM,S,0)):
             if(TKs[GI].CP==';'):
                 GI+=1
                 return True
     else:
         return False
 
-def SST(TKs):
+def SST(TKs,CN,AM,TM,S):
     global GI
+    # S=0
+    # CN=''
+    # AM=''
+    # TM=''
     SST_sel = ['ID', 'this', 'while', 'if', 'for', 'return',
                'static', 'DT', 'tuple', 'dict', 'ID', 'var']
     print(GI)
     if(TKs[GI].CP in SST_sel):
         # GI += 1
-        if(NewAssignSt(TKs)):
+        if(NewAssignSt(TKs,CN,AM,T,TM,S)):
             return True
-        elif (NewDec(TKs)):
+        elif (NewDec(TKs,CN,AM,S)):
             return True
         elif (WhileSt(TKs)):
             return True
@@ -203,23 +276,23 @@ def SST(TKs):
             return True
         elif (ForSt(TKs)):
             return True
-        elif (NewIncDecSt(TKs)):
+        elif (NewIncDecSt(TKs,CN,AM,TM,T,S)):
             return True
-        elif (RetSt(TKs)):
+        elif (RetSt(TKs,CN,AM,'',TM,S)):
             return True
-        elif (FnCall(TKs)):
+        elif (FnCall(TKs,CN,AM,T,TM,S)):
             return True
         else:
             return False
 
 
-def MST(TKs):
+def MST(TKs,CN,AM,TM,S):
     global GI
-    MST_sel = ['ID', 'this', 'while', 'if', 'for', 'return','DT']
+    MST_sel = ['ID', 'this', 'while', 'if', 'for', 'return','DT','}']
     if(TKs[GI].CP in MST_sel):
         # GI += 1
-        if(SST(TKs)):
-            if(MST(TKs)):
+        if(SST(TKs,CN,AM,TM,S)):
+            if(MST(TKs,CN,AM,TM,S)):
                 return True
         return True
     else:
@@ -244,105 +317,160 @@ def RetTypes(TKs):
     RetTypes_sel = ['DT', 'tuple', 'dict', 'ID', 'var', 'void']
     if(TKs[GI].CP in RetTypes_sel):
         if(TKs[GI].CP=='ID'):
-            return True
-        if(ToDec(TKs)):
-            return True
+            GI+=1
+            return TKs[GI-1].VP
+        T=ToDec(TKs)  
+        if(T):
+            return T
         elif(TKs[GI].CP == 'void'):
             GI += 1
-            return True
+            return 'void'
     else:
         return False
 
-def AssignSt(TKs):
+def AssignSt(TKs, CN, AM, TM, T, S):
     global GI
     AssignSt_sel=['ID','this']
     if(TKs[GI].CP in AssignSt_sel):
-        if(FactorID(TKs)):
-            return True
-        elif(Tks[GI].Cp=='this'):
+        T=FactorID(TKs, CN, AM, TM, T, S)
+        if(T):
+            if(TKs[GI].VP=='('):
+                GI+=1
+                T1=FactorBraces(TKs,CN,AM,'',TM,S)
+                T=T.split('-')[0]
+                if(TKs[GI].VP==')'):
+                    GI+=1
+                    if(T1 == T):
+                        return True
+            return T
+        elif(TKs[GI].CP=='this'):
             GI+=1
-            if(x(TKs)):
-                if(Init(TKs)):
-                    if(OEL(TKs)):
+            if(x(TKs, CN, AM, TM, T, S)):
+                if(Init(TKs, CN, AM, TM, T, S)):
+                    if(OEL(TKs,CN,AM,T,TM,S)):
                         return True
     else:
         return False
 
-def PLOpts(TKs):
+def PLOpts(TKs,para,CN,AM,S,*args):
     global GI
-    PLOpts_sel=['static','DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    
+    PLOpts_sel=['static','DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
+              'float', 'char', 'string', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in PLOpts_sel):
-        if(Dec(TKs)):
-            return True
-        elif (OE(TKs)):
-            return True
-        elif(AssignSt(TKs)):
-            return True
+        T=OE(TKs,CN,AM,'','',S,args[0])
+        if(T=='' or T== None or T==False):
+            T=Dec(TKs,CN,AM,S)
+        if(T):
+            para=para+T
+            return para
+        else:
+            para='void'
+            return para 
+        # elif (OE(TKs)):
+        #     return True
+        # elif(AssignSt(TKs)):
+        #     return True
     else:
         return False
     
-def PLOpts2(TKs):
+def PLOpts2(TKs,para,CN,AM,S,*args):
     global GI
-    PLOpts2_sel=['static','DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    # para=''
+    PLOpts2_sel=['static','DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
+              'float', 'char', 'string', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in PLOpts2_sel):
-        if(PLOpts(TKs)):
-            if(PL(TKs)):
-                return True
-            return True
+        para=PLOpts(TKs,para,CN,AM,S,args[0])
+        if(para!=''):
+            para=PL(TKs,para,CN,AM,S)
+            if(para):
+                return para
+            return para
     else:
-        return False
+        return para
 
 
-def PL(TKs):
+def PL(TKs,para,CN,AM,S,*args):
     global GI
-    PL_sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False', ',', ')']
+    tem=None
+    PL_sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
+              'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')']
     if(TKs[GI].CP in PL_sel):
-        if(PLOpts2(TKs)):
+        if(len(args)>0):
+            tem=args[0]
+        para=PLOpts2(TKs,para,'','',S,tem)
+        if(para!=False):
+            if(TKs[GI].CP==')'):
+                return para
             if(TKs[GI].CP == ','):
                 GI += 1
-                return True
+                return para
         if(TKs[GI].CP==')'):
-            return True
+            return para
     return False
 
 
-def Body(TKs):
+def Body(TKs,CN,AM,TM,S):
     global GI
     Body_sel = [';', '{', 'ID', 'this', 'while', 'if', 'for', 'return']
     if(TKs[GI].CP in Body_sel):
         if(TKs[GI].CP == ';'):
             GI += 1
-        elif(SST(TKs)):
+        elif(SST(TKs,CN,AM,TM,S)):
             return True
         elif(TKs[GI].CP == '{'):
+            # S=CreateScope()
             GI += 1
-            if(MST(TKs)):
+            if(MST(TKs,CN,AM,TM,S)):
                 if(TKs[GI].CP == '}'):
                     GI += 1
+                    S=DestroyScope()
                     return True
 
     else:
         return False
 
 
-def FnDec(TKs):
+def FnDec(TKs,CN,AM,TM,S):
     global GI
+    Type=''
     if(TKs[GI].CP == 'def'):
         GI += 1
-        if(StaticOp(TKs)):
-            if(RetTypes(TKs)):
+        TM=StaticOp(TKs)
+        if(TM or TM==None):
+            T=RetTypes(TKs)
+            if(T):
+                T=regex.isKw(T)
+                if(T==''):
+                    T=CLSTBL.LookupCT(T)
+                    if(T==None):
+                        print('No such Type exists ',T)
+                        return False
                 if(TKs[GI].CP == 'ID'):
+                    N=TKs[GI].VP
                     GI += 1
                     if(TKs[+GI].CP == '('):
+                        S=CreateScope()
                         GI += 1
-                        if(PL(TKs)):
+                        para=PL(TKs,'',CN,AM,S,0)
+                        
+                        if(para!=False):
                             # GI += 1
                             if(TKs[GI].CP == ')'):
+                                # S=DestroyScope()
+                                Type=para+'->'+T
+                                # Type=N+Type
+                                t=FnLookup(N,para,CN,AM,TM,S,True)
+                                if(t!=False):
+                                    print('Function Redeclaration on ',TKs[GI].LineNo)
+                                    return False
+                                
+                                if(CN!='' or AM!=''):
+                                    CLSTBL.InsertCDT(CN,N,Type,AM,TM)
+                                else:
+                                    SYMTBL.InsertST(N,Type,S)
                                 GI+=1
-                                if(Body(TKs)):
+                                if(Body(TKs,'','',TM,S)):
                                     return True
     return False
 
@@ -365,11 +493,18 @@ def ClassTypesL(TKs):
 
 def InheriOPts(TKs):
     global GI
+    par=''
     InheriOPts_sel=['ID','mul']
     if(TKs[GI].CP in InheriOPts_sel):
         if(TKs[GI].CP=='ID'):
+            N=TKs[GI].VP
+            N=CLSTBL.LookupCT(N)
+            if(N==None):
+                print('ClassNotDeclared '+ TKs[GI].VP+' at line ',TKs[GI].LineNo)
+                return False
+            par=N
             GI+=1
-            return True
+            return par
         elif(TKs[GI].CP=='mul'):
             GI+=1
             if(TKs[GI].CP=='('):
@@ -391,9 +526,12 @@ def Inheri(TKs):
     if(TKs[GI].CP == ':' or TKs[GI].CP == '{'):
         if(TKs[GI].CP == ':'):
             GI += 1
-            if(InheriOPts(TKs)):
-                return True
-        return True
+            Par=InheriOPts(TKs)
+            if(Par==False):
+                return False
+            if(Par):
+                return Par
+        return ''
     else:
         return False
 
@@ -418,15 +556,15 @@ def Constructor(TKs):
     else:
         return False
 
-def ClassBodyOpts2(TKs):
+def ClassBodyOpts2(TKs,CN,AM):
     global GI
     ClassBodyOpts2_sel=['AM','VO','ID','DT','def']
     if(TKs[GI].CP in ClassBodyOpts2_sel):
-        if(FnDec(TKs)):
+        if(FnDec(TKs,CN,AM,'',None)):
             if(FnInheri(TKs)):
                 if(Body(TKs)):
                     return True
-        elif (NewDec(TKs)):
+        elif (NewDec(TKs,CN,AM,0)):
             return True
         elif (Constructor(TKs)):
             return True
@@ -450,16 +588,17 @@ def AMVOL(TKs):
     else:
         return False
 
-def ClassBodyOpts(TKs):
+def ClassBodyOpts(TKs,CN):
     global GI
     ClassBodyOpts_sel=['AM','VO']
     if(TKs[GI].CP in ClassBodyOpts_sel):
         if(TKs[GI].CP=='AM'):
+            AM=TKs[GI].VP
             GI+=1
             if(TKs[GI].CP==':'):
                 GI+=1
-                if(ClassBodyOpts2(TKs)):
-                    if(ClassBodyOpts(TKs)):
+                if(ClassBodyOpts2(TKs,CN,AM)):
+                    if(ClassBodyOpts(TKs,CN)):
                         return True
                     return True
         elif(AMVOL(TKs)):
@@ -469,21 +608,21 @@ def ClassBodyOpts(TKs):
         return False
 
 
-def ClassBodyL(TKs):
+def ClassBodyL(TKs,CN):
     global GI
     ClassBodyL_sel=['AM','VO','}']
     if(TKs[GI].CP in ClassBodyL_sel):
-        if(ClassBodyOpts(TKs)):
+        if(ClassBodyOpts(TKs,CN)):
             return True
         return True
     else:
         return False
 
-def ClassBody(TKs):
+def ClassBody(TKs,CN):
     global GI
     if(TKs[GI].CP == '{'):
         GI += 1
-        if(ClassBodyL(TKs)):
+        if(ClassBodyL(TKs,CN)):
             if(TKs[GI].CP == '}'):
                 GI += 1
                 return True
@@ -491,7 +630,7 @@ def ClassBody(TKs):
         return False
 
 
-def ClassDec(TKs):
+def ClassDec(TKs,S):
     global GI
     ClassDec_sel = ['AM', 'class', 'static', 'abstract']
     if(TKs[GI].CP in ClassDec_sel):
@@ -500,9 +639,17 @@ def ClassDec(TKs):
             if(TKs[GI].CP == 'class'):
                 GI += 1
                 if(TKs[GI].CP == 'ID'):
+                    CN=TKs[GI].VP
                     GI += 1
-                    if(Inheri(TKs)):
-                        if(ClassBody(TKs)):
+                    Par=Inheri(TKs)
+                    if(Par==False):
+                        return False
+                    if(Par or Par==''):
+                        if(Par):
+                            CLSTBL.InsertCT(CN,Par)
+                        else:
+                            CLSTBL.InsertCT(CN,'')
+                        if(ClassBody(TKs,CN)):
                             return True
     else:
         return False
@@ -520,9 +667,9 @@ def ToDec(TKs):
 
 def xOpts(TKs):
     global GI
-    xOpts_sel=['IntConst','AOP']
+    xOpts_sel=['int','AOP']
     if(TKs[GI].CP in xOpts_sel):
-        if(TKs[GI].CP=='IntConst'):
+        if(TKs[GI].CP=='int'):
             GI+=1
             if(FactorComma(TKs)):
                 if(xOpts(TKs)):
@@ -534,18 +681,18 @@ def xOpts(TKs):
 
 def Slice(TKs):
     global GI
-    if(TKs[GI].CP=='IntConst'):
+    if(TKs[GI].CP=='int'):
         GI+=1
         if(TKs[GI].CP==':'):
             GI+=1
-            if(TKs[GI].CP=='IntConst'):
+            if(TKs[GI].CP=='int'):
                 return True
     else:
         return False
 
 def FactorBrackets(TKs):
     global GI
-    FactorBrackets_sel=['IntConst',']']
+    FactorBrackets_sel=['int',']']
     if(TKs[GI].CP in FactorBrackets_sel):
         if(xOpts(TKs)):
             return True
@@ -554,18 +701,19 @@ def FactorBrackets(TKs):
     else:
         return False
 
-def xOpts2(TKs):
+def xOpts2(TKs,CN,AM,T,TM,S):
     global GI
     xOpts2_sel=['ID','[','.','AOP']
     if(TKs[GI].CP in xOpts2_sel):
-        if(FactorID(TKs)):
-            return True
-        elif(x(TKs)):
+        T=FactorID(TKs,CN,AM,TM,'',S)
+        if(T):
+            return T
+        elif(x(TKs,CN,AM,T,TM,S)):
             return True
     else:
         return False
 
-def x(TKs):
+def x(TKs,CN,AM,T,TM,S):
     global GI
     x_sel=['[','.','AOP',',']
     if(TKs[GI].CP in x_sel):
@@ -577,16 +725,21 @@ def x(TKs):
                     if(x(TKs)):
                         return True
         elif(TKs[GI].CP=='.'):
+            OP=TKs[GI].CP
             GI+=1
-            if(xOpts2(TKs)):
-                return True     
-        return True
+            T2=xOpts2(TKs,T,AM,T,TM,S)
+            T=Compatibility(T,T2,OP)
+            if(T==None):
+                print('TypeMismatch on line ', TKs[GI].LineNo)
+            if(T):
+                return T     
+        return T
     else:
         return False
 
 def StuffDic(TKs):
     global GI
-    StuffDic_sel=['ID', 'IntConst','FloatConst', 'CharConst', 'StringConst','(', 'not', 'True', 'False',':']
+    StuffDic_sel=['ID', 'int','float', 'char', 'string','(', 'not', 'True', 'False',':']
     if(TKs[GI].CP in StuffDic_sel):
         if(OE(TKs)):
             return True
@@ -608,7 +761,7 @@ def MoreDic(TKs):
 
 def Dic(TKs):
     global GI
-    Dic_sel=['ID', 'IntConst','FloatConst', 'CharConst', 'StringConst','(', 'not', 'True', 'False',':']
+    Dic_sel=['ID', 'int','float', 'char', 'string','(', 'not', 'True', 'False',':']
     if(TKs[GI].CP in Dic_sel):
         if(OE(TKs)):
             return True
@@ -632,14 +785,16 @@ def TupleDec(TKs):
     else:
         return False
 
-def InitOpts(TKs):
+def InitOpts(TKs,CN,AM,T,TM,S):
     global GI
-    InitOpts_sel=['ID', 'IntConst','FloatConst', 'CharConst', 'StringConst', '(','{','[','this', 'not', 'True', 'False']
+    InitOpts_sel=['ID', 'int','float', 'char', 'string', '(','{','[','this', 'not', 'True', 'False']
     if(TKs[GI].CP in InitOpts_sel):
-        if(FactorID(TKs)):
-            return True
-        elif (OE(TKs)):
-            return True
+        # T=FactorID(TKs,CN,AM,TM,T,S)
+        T=OE(TKs)
+        if(T):
+            return T
+        # elif (OE(TKs)):
+        #     return True
         elif(TKs[GI].CP=='new'):
             GI+=1
             if(TKs[GI].CP=='ID'):
@@ -672,14 +827,19 @@ def InitOpts(TKs):
     else:
         return False
 
-def Init(TKs):
+def Init(TKs,CN,AM,T,TM,S):
     global GI
-    Init_sel=['ID', 'IntConst',
-             'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False','AOP',',']
+    Init_sel=['ID', 'int',
+             'float', 'char', 'string', '(', 'not', 'True', 'False','AOP',',']
     if(TKs[GI].CP in Init_sel):
         if(TKs[GI].CP=='AOP'):
+            OP=TKs[GI].CP
             GI+=1
-            if(InitOpts(TKs)):
+            T2=InitOpts(TKs,CN,AM,T,TM,S)
+            T=Compatibility(T,T2,OP)
+            if(T==None):
+                print('TypeMismatch on line '+ TKs[GI].LineNo)
+            if(T):
                 return True
         return True
     else:
@@ -687,30 +847,30 @@ def Init(TKs):
 
 
 
-def FI2Opts(TKs):
+def FI2Opts(TKs,CN,AM,T,TM,S):
     global GI
-    FI2Opts_sel=['ID', 'IntConst',
-             'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False','static','DT','tuple','dict','var','this',',']
+    FI2Opts_sel=['ID', 'int',
+             'float', 'char', 'string', '(', 'not', 'True', 'False','static','DT','tuple','dict','var','this',',']
     if(TKs[GI].CP in FI2Opts_sel):
-        if(OEL2(TKs)):
+        if(OEL2(TKs,CN,AM,T,TM,S)):
             return True
     else:
         return False
 
-def FactorID2(TKs):
+def FactorID2(TKs,CN,AM,T,TM,S):
     global GI
     FactorID2_sel = ['[', '.','AOP',',']
     if(TKs[GI].CP in FactorID2_sel):
-        if(x(TKs)):
-            if(Init(TKs)):
-                if(FI2Opts(TKs)):
+        if(x(TKs,CN,AM,T,TM,S)):
+            if(Init(TKs,CN,AM,T,TM,S)):
+                if(FI2Opts(TKs,CN,AM,T,TM,S)):
                     return True
     else:
         return False
 
 # def FCOptsL(TKs):
 #     global GI
-#     FCOptsL_sel=['AOP','ID','IntConst','FloatConst','CharConst','StringConst','not','(','True','False']
+#     FCOptsL_sel=['AOP','ID','int','float','char','string','not','(','True','False']
 #     if(TKs[GI].CP in FCOptsL_sel):
 #         if(Init(TKs)):
 #             if(OEL(TKs)):
@@ -719,305 +879,425 @@ def FactorID2(TKs):
 #             if(OEL2(TKs)):
 #                 return True
 
-def FCOpts(TKs):
+def FCOpts(TKs,CN,AM,T,TM,S):
     global GI
-    FCOptsL_sel=['static','DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    FCOptsL_sel=['static','DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
+              'float', 'char', 'string', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in FCOptsL_sel):
-        if(OEL(TKs)):
+        if(OEL(TKs,CN,AM,T,TM,S)):
             return True
     return False
 
-def FactorComma(TKs):
+def FactorComma(TKs,CN,AM,T,TM,S):
     global GI
     if(TKs[GI].CP==','):
         if(TKs[GI].CP==','):
             GI+=1
-            if(FCOpts(TKs)):
+            if(FCOpts(TKs,CN,AM,T,TM,S)):
                 return True
         return True
     else:
         return False
 
-def OEL2(TKs):
+def OEL2(TKs,CN,AM,T,TM,S):
     global GI
     if(TKs[GI].CP==','):
-        if(FactorComma(TKs)):
+        if(FactorComma(TKs,CN,AM,T,TM,S)):
             return True
         return True
     else:
         return False
 
-def OEL(TKs):
+def OEL(TKs,CN,AM,T,TM,S):
     global GI
-    OEL_sel=['ID', 'IntConst',
-             'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    OEL_sel=['ID', 'int',
+             'float', 'char', 'string', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in OEL_sel):
-        if(OE(TKs)):
-            if(OEL2(TKs)):
+        T=OE(TKs,CN,AM,T,TM,S,0)
+        if(T):
+            if(OEL2(TKs,CN,AM,T,TM,S)):
                 return True
         return True
     else:
         return False
 
-def FactorBraces(TKs):
+def FactorBraces(TKs,CN,AM,T,TM,S,*args):
     global GI
-    FactorBraces_sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
-                        'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False', ',', ')']
+    tem=None
+    if(len(args)>0):
+        tem=args[0]
+    FactorBraces_sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
+                        'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')']
     if(TKs[GI].CP in FactorBraces_sel):
-        if(OEL(TKs)):
-            return True
-        elif (PL(TKs)):
-            return True
+        # if(OEL(TKs,CN,AM,'',TM,S)):
+        #     return True
+        T=PL(TKs,'',CN,AM,S,None)
+        if (T):
+            return T
         return True
     else:
         return False
 
-def FnCall(TKs):
+def FnCall(TKs,CN,AM,T,TM,S):
     global GI
     if(TKs[GI].CP=='ID'):
-        if(FactorID(TKs)):
+        if(FactorID(TKs,CN,AM,T,TM,S)):
             return True
     else:
         return False    
 
 
 
-def T(TKs):
+def T(TKs,Tv,CN,AM,TM,S,*args):
     global GI
-    T_sel = ['ID', 'IntConst',
-             'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    T_sel = ['ID', 'int',
+             'float', 'char', 'string', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in T_sel):
-        if(FactorID(TKs)):
-            if(OE(TKs)):
-                return True
-            return True
-        elif(TKs[GI].CP=='IntConst' or TKs[GI].CP=='FloatConst' or TKs[GI].CP=='CharConst' or TKs[GI].CP=='StringConst'):
+        Tv=FactorID(TKs,CN,AM,TM,Tv,S)
+        if(Tv):
+            Tv2=OE(TKs,CN,AM,Tv,TM,S,0)
+            if(Tv2):
+                return Tv2
+            return Tv
+        if(TKs[GI].CP=='int' or TKs[GI].CP=='float' or TKs[GI].CP=='char' or TKs[GI].CP=='string'):
+            Tv=TKs[GI].CP
             GI+=1
-            return True
-        elif(FnCall(TKs)):
-            return True
-        elif(TKs[GI].CP=='('):
+            return Tv
+        Tv=FnCall(TKs,CN,AM,T,TM,S)
+        if(Tv):
+            return Tv
+        if(TKs[GI].CP=='('):
             GI+=1
-            if(FnCall(TKs)):
+            Tv=FnCall(TKs,CN,AM,T,TM,S)
+            if(T):
                 if(TKs[GI].CP==')'):
                     GI+=1
-                    return True
-        elif(TKs[GI].CP=='not'):
+                    return Tv
+        if(TKs[GI].CP=='not'):
             GI+=1
-            if(T(TKs)):
-                return True
-        elif(IncDec(TKs)):
-            return True
-        elif(TKs[GI].CP=='True'):
-            return True
-        elif(TKs[GI].CP=='False'):
-            return True
+            Tv=T(TKs,Tv,CN,AM,TM,S)
+            if(Tv):
+                return Tv
+        # elif(IncDec(TKs,'','','','',S)):
+        #     return op
+        if(TKs[GI].CP=='True'):
+            return 'bool'
+        if(TKs[GI].CP=='False'):
+            return 'bool'
 
-def NT_(TKs):
+def NT_(TKs,Tv,CN,AM,TM,S,*args):
     global GI
-    NT__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and', 'ROP', 'PM','MDM',';']
+    NT__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
+              'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and', 'ROP', 'PM','MDM',';']
     if(TKs[GI].CP in NT__sel):
         if(TKs[GI].CP == 'MDM'):
+            op=TKs[GI].VP
             GI += 1
-            if(T(TKs)):
-                if(NT_(TKs)):
-                    return True
-        return True
+            T1=T(TKs,'',CN,AM,TM,S,args[0])
+            Tv=Compatibility(Tv,T1,op)
+            if(Tv):
+                Tv=NT_(TKs,Tv,CN,AM,TM,S,args[0])
+                if(Tv):
+                    return Tv
+        return Tv
     else:
-        return False
+        return ''
 
-def NT(TKs):
+def NT(TKs,Tv,CN,AM,TM,S,*args):
     global GI
-    NT_sel = ['ID', 'IntConst',
-             'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    NT_sel = ['ID', 'int',
+             'float', 'char', 'string', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in NT_sel):
-        if(T(TKs)):
-            if(NT_(TKs)):
-                return True
+        Tv=T(TKs,Tv,CN,AM,TM,S,args[0])
+        if(Tv):
+            Tv2=NT_(TKs,Tv,CN,AM,TM,S,args[0])
+            if(Tv2):
+                return Tv2
+            return Tv
     else:
-        return False
+        return ''
 
-def E_(TKs):
+def E_(TKs,Tv,CN,AM,TM,S,*args):
     global GI
-    E__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and', 'ROP', 'PM',';']
+    E__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
+              'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and', 'ROP', 'PM',';']
     if(TKs[GI].CP in E__sel):
         if(TKs[GI].CP == 'PM'):
+            op=TKs[GI].VP
             GI += 1
-            if(NT(TKs)):
-                if(E_(TKs)):
-                    return True
-        return True
+            T1=NT(TKs,'',CN,AM,TM,S,args[0])
+            Tv=Compatibility(Tv,T1,op)
+            if(Tv):
+                Tv=E_(TKs,Tv,CN,AM,TM,S,args[0])
+                if(Tv):
+                    return Tv
+        return Tv
     else:
-        return False
+        return ''
 
 
-def E(TKs):
+def E(TKs,Tv,CN,AM,TM,S,*args):
     global GI
-    E_sel = ['ID', 'IntConst',
-             'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    E_sel = ['ID', 'int',
+             'float', 'char', 'string', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in E_sel):
-        if(NT(TKs)):
-            if(E_(TKs)):
-                return True
+        Tv=NT(TKs,Tv,CN,AM,TM,S,args[0])
+        if(Tv):
+            Tv2=E_(TKs,Tv,CN,AM,TM,S,args[0])
+            if(Tv2):
+                return Tv2
+            return Tv
     else:
-        return False
+        return ''
 
 
-def RE_(TKs):
+def RE_(TKs,Tv,CN,AM,TM,S,*args):
     global GI
-    RE__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
-               'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and', 'ROP',';']
+    RE__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
+               'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and', 'ROP',';']
     if(TKs[GI].CP in RE__sel):
         if(TKs[GI].CP == 'ROP'):
+            op=TKs[GI].VP
             GI += 1
-            if(E(TKs)):
-                if(RE_(TKs)):
-                    return True
-        return True
+            T1=E(TKs,'',CN,AM,TM,S,args[0])
+            Tv=Compatibility(Tv,T1,op)
+            if(Tv):
+                Tv=RE_(TKs,Tv,CN,AM,TM,S,args[0])
+                if(Tv):
+                    return Tv
+        return Tv
     else:
-        return False
+        return ''
 
 
-def RE(TKs):
+def RE(TKs,Tv,CN,AM,TM,S,*args):
     global GI
-    RE_sel = ['ID', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    RE_sel = ['ID', 'int',
+              'float', 'char', 'string', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in RE_sel):
-        if(E(TKs)):
-            if(RE_(TKs)):
-                return True
+        Tv=E(TKs,Tv,CN,AM,TM,S,args[0])
+        if(Tv):
+            Tv2=RE_(TKs,Tv,CN,AM,TM,S,args[0])
+            if(Tv2):
+                return Tv2
+            return Tv
     else:
-        return False
+        return ''
 
 
-def AE_(TKs):
+def AE_(TKs,Tv,CN,AM,TM,S,*args):
     global GI
-    AE__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
-               'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and',';']
+    AE__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
+               'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and',';']
     if(TKs[GI].CP in AE__sel):
         if(TKs[GI].CP == 'and'):
+            op=TKs[GI].VP
             GI += 1
-            if(RE(TKs)):
-                if(AE_(TKs)):
-                    return True
-        return True
+            T1=RE(TKs,'',CN,AM,TM,S,args[0])
+            Tv=Compatibility(Tv,T1,op)
+            if(Tv):
+                T=AE_(TKs,Tv,CN,AM,TM,S,args[0])
+                if(Tv):
+                    return Tv
+        return Tv
     else:
-        return False
+        return ''
 
 
-def AE(TKs):
+def AE(TKs,Tv,CN,AM,TM,S,*args):
     global GI
-    AE_sel = ['ID', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    AE_sel = ['ID', 'int',
+              'float', 'char', 'string', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in AE_sel):
-        if(RE(TKs)):
-            if(AE_(TKs)):
-                return True
+        Tv=RE(TKs,Tv,CN,AM,TM,S,args[0])
+        if(Tv):
+            Tv2=AE_(TKs,Tv,CN,AM,TM,S,args[0])
+            if(Tv2):
+                return Tv2
+            return Tv
     else:
-        return False
+        return ''
 
 
-def OE_(TKs):
+def OE_(TKs,Tv,CN,AM,TM,S,*args):
     global GI
-    OE__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'IntConst',
-               'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False', ',', ')', ':', 'or',';']
+    OE__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
+               'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')', ':', 'or',';']
     if(TKs[GI].CP in OE__sel):
         if(TKs[GI].CP == 'or'):
+            op=TKs[GI].VP
             GI += 1
-            if(AE(TKs)):
-                if(OE_(TKs)):
-                    return True
-        return True
+            T1=AE(TKs,'',CN,AM,TM,S,args[0])
+            Tv=Compatibility(Tv,T1,op)
+            if(Tv):
+                Tv=OE_(TKs,Tv,CN,AM,TM,S,args[0])
+                if(Tv):
+                    return Tv
+        return Tv
     else:
-        return False
+        return ''
 
 
-def OE(TKs):
+def OE(TKs,CN,AM,T,TM,S,*args):
     global GI
-    OE_sel = ['ID', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False']
+    tem=None
+    OE_sel = ['ID', 'int',
+              'float', 'char', 'string', '(', 'not', 'True', 'False']
     if(TKs[GI].CP in OE_sel):
-        if(AE(TKs)):
-            if(OE_(TKs)):
-                return True
+        if(len(args)>0):
+            tem=args[0]
+        Tv=AE(TKs,T,CN,AM,TM,S,tem)
+        if(Tv):
+            Tv2=OE_(TKs,Tv,CN,AM,TM,S,tem)
+            if(Tv2):
+                return Tv2
+            return Tv
     else:
-        return False
+        return ''
 
 
 def IncDecOp(TKs):
     global GI
     if(TKs[GI].CP == 'AOP'):
+        op=TKs[GI].VP
         GI += 1
-        return True
+        return op
 
 
-def FIOpts(TKs):
+def FIOpts(TKs,CN,AM,T,TM,S,*args):
     global GI
     print(GI)
-    FIOpts_sel = ['AOP', '(', '[', '.',',','ID', 'IntConst',
-              'FloatConst', 'CharConst', 'StringConst', '(', 'not', 'True', 'False',';',')','ROP']
+    T2=T
+    FIOpts_sel = ['AOP', '(', '[', '.',',','ID', 'int',
+              'float', 'char', 'string', '(', 'not', 'True', 'False',';',')','ROP']
     if(TKs[GI].CP in FIOpts_sel):
         # GI += 1
-        if(IncDecOp(TKs)):
-            if(OE(TKs)):
+        Op=IncDecOp(TKs)
+        if(Op):
+            
+            T1=OE(TKs,CN,AM,'',TM,S,0)
+            print(GI)
+            if(T1 and TKs[GI].VP!='.'):
+                T=Compatibility(T2,T1,Op)
+                if(T==None):
+                    print('Type Mismatch Error at line ',TKs[GI].LineNo)
+                    return False
                 return True
-            if(x(TKs)):
-                return True
+            T3=x(TKs,CN,AM,T1,TM,S)
+            Tt=T3
+            if(T3):
+                Tt=x(TKs,CN,AM,T3,TM,S)
+                if(Tt):
+                    T=Compatibility(T2,Tt,Op)
+                else:
+                    T=Compatibility(T2,T3,Op)
+            if(T==None):
+                print('Type Mismatch Error at line ',TKs[GI].LineNo)
+                return False
+            return True
         if(TKs[GI].CP=='ROP'):
-            if(OE(TKs)):
+            op=TKs[GI].VP
+            T1=OE(TKs,S)
+            if(T1):
+                T=Compatibility(T,T1,Op)
+                if(T==None):
+                    print('Type Mismatch Error at line ',TKs[GI].LineNo)
+                    return False
                 return True
         elif(TKs[GI].CP == '('):
+            S=CreateScope()
             GI += 1
-            if(FactorBraces(TKs)):
+            N=args[0]
+            T=FactorBraces(TKs,CN,AM,T,TM,S,1)
+            if(T):
                 if(TKs[GI].CP == ')'):
+                    S=DestroyScope()
                     GI += 1
                     return True
-        elif FactorID2(TKs):
+        elif FactorID2(TKs,CN,AM,T,TM,S):
             return True
-        elif(OE(TKs)):
+        elif(OE(TKs,CN,AM,T,TM,S,0)):
             return True
         return True
     else:
         return False
 
-
-def FactorID(TKs,AM,TM,T):
+def FactorID(TKs,CN,AM,TM,T,S,*args):
     global GI
+    flag=0
+    flag2=0
     if(TKs[GI].CP == 'ID'):
         N=TKs[GI].VP
         GI += 1
-        if(AM):
-            
         print(GI)
-        if(FIOpts(TKs)):
+        if(T==''):
+            if(AM or TKs[GI-2].VP=='.'):
+                T=CLSTBL.LookupCDT(CN,N,AM,TM)
+                return T
+            else:
+                T=SYMTBL.FnLookupST(N,S)
+                if(T==None):
+                    T=SYMTBL.LookupST(N,S,T)
+                else:
+                    return T
+                if(T or TKs[GI].VP=='.'):
+                    flag2=1
+                flag=1
+                if(T==None):
+                    T=CLSTBL.LookupCT(N)
+                    # flag2=1
+                    if(T==None):
+                        T=SYMTBL.FnLookupST(N,S)
+                        flag2=2
+                        if(T==None):
+                            print("Undeclared Variable Reference ",TKs[GI].VP)
+                            return False
+                if(flag2!=0 and TKs[GI].VP in WordSplitter.operators):
+                    return T
+        if((not regex.isKw(T)) and (TKs[GI].VP=='.')):
+            if(flag2==0 and TKs[GI].VP=='('):
+                pass
+            else:
+                return T
+        if(AM and TKs[GI].CP!='('):
+            if(CLSTBL.InsertCDT(CN,N,T,AM,TM)==False and flag!=1):
+                print("Redenclaration Error for "+N+" on line Number ", TKs[GI-1].LineNo)
+                return False
+        elif((AM=='' or AM==None or AM==False)and (TKs[GI].CP!='(') and flag!=1):
+            if(SYMTBL.InsertST(N,T,S)==False): 
+                print("Redenclaration Error for "+N+" on line Number ", TKs[GI-1].LineNo)
+                # GI+=1
+                return False
+        
+        if(FIOpts(TKs,CN,AM,T,TM,S,N)):
+            if(len(args)>0):
+                if(args[0]==1):
+                    return T
             return N
     return False
 
 
-def Dec(TKs):
+def Dec(TKs,CN,AM,S):
     global GI
     Dec_sel = ['static', 'tuple', 'DT', 'dict', 'ID', 'var']
     if(TKs[GI].CP in Dec_sel):
         TM=StaticOp(TKs)
         if(TM!=False):
             T=ToDec(TKs)
-            if(regex.isIdentifier(T)):
+            if(not regex.isKw(T)):
                 T=CLSTBL.LookupCT(T)
-            if(T!=False):
-                N=FactorID(TKs,'',TM,T)
+            if(T!=None):
+                N=FactorID(TKs,CN,AM,TM,T,S)
                 if(N!=False):
-                    return True
+                    return T
     return False
 
 
-def NewDec(TKs):
+def NewDec(TKs,CN,AM,S):
     global GI
     NewDec_sel = ['static', 'tuple', 'DT', 'dict', 'ID', 'var']
     if(TKs[GI].CP in NewDec_sel):
-        if(Dec(TKs)):
+        if(Dec(TKs,CN,AM,S)):
             if(TKs[GI].CP == ';'):
                 GI += 1
                 return True
@@ -1025,54 +1305,57 @@ def NewDec(TKs):
         return False
 
 
-def GlobalDefs(TKs):
+def GlobalDefs(TKs,S):
     global GI
+    CN=''
+    AM=''
     GlobalDefs_sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var']
     print(TKs[GI].CP)
     if(TKs[GI].CP in GlobalDefs_sel):
-        if(NewDec(TKs)):
-            if(GlobalDefs(TKs)):
+        if(NewDec(TKs,CN,AM,S)):
+            if(GlobalDefs(TKs,S)):
                 return True
             return True
     else:
         return False
 
-def BodyOpts(TKs):
+def BodyOpts(TKs,CN,AM,TM,S):
     global GI
     BodyOpts_sel=[';','{','ID','this','while','if','for','return','def',
                 'AM','static','abstract','class','DT','tuple','dict','ID','var','main','$']
     if(TKs[GI].CP in BodyOpts_sel):
-        if(Body(TKs)):
+        if(Body(TKs,CN,AM,TM,S)):
             return True
         return True
     else:
         return False
 
-def FnDec2(TKs):
+def FnDec2(TKs,CN,AM,TM,S):
     global GI
     if(TKs[GI].CP=='def'):
-        if(FnDec(TKs)):
-            if(BodyOpts(TKs)):
+        if(FnDec(TKs,CN,AM,TM,S)):
+            if(BodyOpts(TKs,CN,AM,TM,S)):
                 return True
     else:
         return False
 
-def Defs(TKs):
+def Defs(TKs,S):
     global GI
+    
     Defs_sel = ['def', 'AM', 'static', 'abstract', 'class',
                 'DT', 'tuple', 'dict', 'ID', 'var', 'main', '$']
     if(TKs[GI].CP in Defs_sel):
         print(GI)
-        if(FnDec2(TKs)):
-            if(Defs(TKs)):
+        if(FnDec2(TKs,'','','',S)):
+            if(Defs(TKs,S)):
                 return True
             return True
-        elif(ClassDec(TKs)):
-            if(Defs(TKs)):
+        elif(ClassDec(TKs,S)):
+            if(Defs(TKs,S)):
                 return True
             return True
-        elif(GlobalDefs(TKs)):
-            if(Defs(TKs)):
+        elif(GlobalDefs(TKs,S)):
+            if(Defs(TKs,S)):
                 return True
             return True
         elif (TKs[GI].CP=='main'):
@@ -1087,11 +1370,13 @@ def Defs(TKs):
 def Start(TKs):
     global GI
     GI = 0
+    
+    S=CreateScope()
     Start_sel = ['def', 'public', 'private', 'protected', 'sealed', 'static',
                  'abstract', 'class', 'DT', 'tuple', 'dict', 'ID', 'var','main']
     if(TKs[GI].CP in Start_sel):
         print(GI)
-        if(Defs(TKs)):
+        if(Defs(TKs,S)):
             if(TKs[GI].CP == 'main'):
                 GI += 1
                 if(TKs[GI].CP == '('):
@@ -1100,10 +1385,15 @@ def Start(TKs):
                         GI += 1
                         if(TKs[GI].CP == '{'):
                             GI += 1
-                            if(MST(TKs)):
+                            AM=''
+                            TM=''
+                            CN=''
+                            S=CreateScope()
+                            if(MST(TKs,CN,AM,TM,S)):
                                 if(TKs[GI].CP == '}'):
+                                    S=DestroyScope()
                                     GI += 1
-                                    if(Defs(TKs)):
+                                    if(Defs(TKs,S)):
                                         return True
         # return True
     else:

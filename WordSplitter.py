@@ -2,7 +2,7 @@ import LA
 puntuators = [';', ',', '\n', ':', '[', ']', '{', '}', '(', ')']
 
 operators = ['and', 'or', 'not', '*', '/', '%', '+', '-', '<',
-             '>', '>=', '<=', '!=', '==', 'band', 'bor', 'bnot', 'bxor']
+             '>', '>=', '<=', '!=', '==', 'band', 'bor', 'bnot', 'bxor', '.']
 
 assignments = ['+=', '-=', '*=', '/=', '%=', '=']
 
@@ -93,7 +93,7 @@ def BreakWord(string):
                 i += 1
                 char = string[i]
                 nextch = string[i+1]
-                if(LA.isAlpha(nextch) or len(lexeme) != 1):
+                if(LA.isAlpha(nextch) or len(lexeme) != 1 or nextch in seperators):
                     res.append(lexeme)
                     lexeme = ''
                 if(dotcount > 0):
@@ -113,9 +113,12 @@ def BreakWord(string):
                                 i = i+1
                                 char = string[i]
                                 lexeme += char
-                if lexeme != '' and dot not in lexeme:
+                if ((lexeme != '') and (dot not in lexeme)):
                     res.append(lexeme)
                     lexeme = ''
+            if(nextch == ';' and lexeme):
+                res.append(lexeme)
+                lexeme = ''
             if char == dot and len(lexeme) == 1 and LA.isAlpha(nextch):
                 res.append(lexeme)
                 lexeme = ''
