@@ -350,6 +350,10 @@ def AssignSt(TKs, CN, AM, TM, T, S):
                     GI+=1
                     if(T1 == T):
                         return True
+                    else:
+                        return False
+                else:
+                    return False
             elif(TKs[GI].VP in WordSplitter.assignments):
                 if(Init(TKs,CN,AM,T,TM,S)):
                     return True
@@ -415,6 +419,7 @@ def PL(TKs,para,CN,AM,S,*args):
                 return para
             if(TKs[GI].CP == ','):
                 GI += 1
+                para=PLOpts2(TKs,para,'','',S,tem)
                 return para
         if(TKs[GI].CP==')'):
             return para
@@ -1406,6 +1411,7 @@ def Start(TKs):
                                     GI += 1
                                     if(Defs(TKs,S)):
                                         return True
+                                    return True
         # return True
     else:
         return False

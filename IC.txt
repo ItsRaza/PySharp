@@ -1,0 +1,15 @@
+T2=a*9
+T1=8+a
+L1:
+T3=a1>0
+if(a1==false) jmp L2
+T4=a1-1
+a1=a1=a1
+jmp L1
+jmp L2
+T5=a1==0
+if(a1==false) jmp L3
+T6=a1*2
+jmp L4
+L3:T7=a1*3
+L4:

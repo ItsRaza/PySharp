@@ -17,4 +17,5 @@ print('\n')
 
 # print(ICG.CreateLable())
 
-ICG.SA(TKs)
+Semantic.SA(TKs)
+# ICG.SA(TKs)

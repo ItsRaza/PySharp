@@ -225,7 +225,7 @@ def C2(TKs,CN,AM,T,TM,S):
         # elif (TKs[GI].CP==';'):
         #     GI+=1
         #     return True
-        return True
+        return T
     else:
         return False
 
@@ -288,7 +288,7 @@ def ForOpts(TKs,CN,AM,T,TM,S):
                         if(T):
                             if(TKs[GI].CP==')'):
                                 GI+=1
-                                return (L2,T)
+                                return (L1,T,L2)
         elif(TKs[GI].CP=='ID'):
             GI+=1
             if(TKs[GI].CP=='in'):
@@ -309,7 +309,7 @@ def ForSt(TKs,CN,AM,T,TM,S):
                     f.write('\n')
                     f.write('jmp '+L1[0])
                     f.write('\n')   
-                    f.write(L1[0]+':')
+                    f.write(L1[2]+':')
                     f.write('\n')
                 return True
     else:
@@ -415,7 +415,7 @@ def AssignSt(TKs, CN, AM, TM, T, S):
                         return True
             elif(TKs[GI].VP in WordSplitter.assignments):
                 if(Init(TKs,CN,AM,T,TM,S)):
-                    return True
+                    return T
             return T
         elif(TKs[GI].CP=='this'):
             GI+=1
@@ -911,13 +911,13 @@ def Init(TKs,CN,AM,T,TM,S):
             GI+=1
             T2=InitOpts(TKs,CN,AM,T,TM,S)
             with open('IC.txt','a') as f:
-                f.write(T+'='+T2+OP+T1)
+                f.write(T+'='+T2+OP+T)
                 f.write('\n')
             # T=Compatibility(T,T2,OP)
             if(T==None or T==''):
                 print('TypeMismatch on line ', TKs[GI].LineNo)
             if(T):
-                return True
+                return T
         return True
     else:
         return False
@@ -1073,14 +1073,14 @@ def NT_(TKs,Tv,CN,AM,TM,S,*args):
     if(TKs[GI].CP in NT__sel):
         # T=CreatTemp()
         if(TKs[GI].CP == 'MDM'):
-            T=CreatTemp()
+            Tt=CreatTemp()
             op=TKs[GI].VP
             GI += 1
-            T1=T(TKs,'',CN,AM,TM,S,args[0])
+            T1=T(TKs,'',CN,AM,TM,S)
             # Tv=Compatibility(Tv,T1,op)
-            Tv=NT_(TKs,Tv,CN,AM,TM,S,args[0])
+            Tv=NT_(TKs,Tv,CN,AM,TM,S)
             with open('IC.txt','a') as f:
-                f.write(T+'='+Tv+op+T1)
+                f.write(Tt+'='+Tv+op+T1)
                 f.write('\n')
             if(Tv):
                 return Tv
