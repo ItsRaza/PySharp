@@ -13,6 +13,17 @@ stack=[]
 GI = 0
 stack_Scope = []
 Scope_no    = 0 
+L=0
+Tt=0
+def CreatLable():
+    global L
+    L+=1
+    return 'L'+str(L)
+
+def CreatTemp():
+    global Tt
+    Tt+=1
+    return 'T'+str(Tt)
 
 def CreateScope():
     global Scope_no
@@ -83,10 +94,11 @@ def NewAssignSt(TKs,CN,AM,T,TM,S):
     global GI
     NewAssignSt_sel = ['ID', 'this']
     if(TKs[GI].CP in NewAssignSt_sel):
-        if(AssignSt(TKs,CN,AM,T,TM,S)):
+        T=AssignSt(TKs,CN,AM,T,TM,S)
+        if(T):
             if(TKs[GI].CP == ';'):
                 GI += 1
-                return True
+                return T
     else:
         return False
 
@@ -94,6 +106,10 @@ def NewAssignSt(TKs,CN,AM,T,TM,S):
 def WhileSt(TKs,CN,AM,T,TM,S):
     global GI
     if(TKs[GI].CP == 'while'):
+        L1=CreatLable()
+        with open('IC.txt','a') as f:
+            f.write(L1+':')
+            f.write('\n')
         GI += 1
         if(TKs[GI].CP == '('):
             GI += 1
@@ -101,21 +117,41 @@ def WhileSt(TKs,CN,AM,T,TM,S):
             T=OE(TKs,CN,AM,T,TM,S)
             if(T):
                 if(TKs[GI].CP == ')'):
+                    L2=CreatLable()
+                    with open('IC.txt','a') as f:
+                        f.write('if('+T+'==false) jmp '+L2)
+                        f.write('\n')
                     GI += 1
                     if(Body(TKs,CN,AM,TM,S)):
+                        with open('IC.txt','a') as f:
+                            f.write('jmp '+L1)
+                            f.write('\n')
+                            f.write('jmp '+L2)
+                            f.write('\n')
                         return True
     else:
         return False
 
 
-def IfElseOpts(TKs,CN,AM,T,TM,S):
+def IfElseOpts(TKs,CN,AM,T,TM,S,*args):
     global GI
+    L1=None
+    if(len(args)>0):
+        L1=args[0]
     IfElseOpts_sel = ['ID', 'this', 'while',
         'if', 'for', 'return', 'else', 'elif']
     if(TKs[GI].CP in IfElseOpts_sel):
         if(TKs[GI].CP == 'else'):
+            L2=CreatLable()
+            with open('IC.txt','a') as f:
+                f.write('jmp '+L2)
+                f.write('\n')
+                f.write(L1+':')
             GI += 1
             if(Body(TKs,CN,AM,TM,S)):
+                with open('IC.txt','a') as f:
+                    f.write(L2+':')
+                    f.write('\n')
                 return True
         elif(TKs[GI].CP == 'elif'):
             GI += 1
@@ -129,8 +165,11 @@ def IfElseOpts(TKs,CN,AM,T,TM,S):
                         if(Body(TKs,CN,AM,TM,S)):
                             if(IfElseOpts(TKs,CN,AM,T,TM,S)):
                                 return True
-
-        return True
+        else:
+            with open('IC.txt','a') as f:
+                f.write(L1+':')
+                f.write('\n')
+            return True
     else:
         return False
 
@@ -138,6 +177,7 @@ def IfElseOpts(TKs,CN,AM,T,TM,S):
 def IfElseSt(TKs,CN,AM,T,TM,S):
     global GI
     if(TKs[GI].CP == 'if'):
+        L1=CreatLable()
         GI += 1
         if(TKs[GI].CP == '('):
             GI += 1
@@ -145,9 +185,12 @@ def IfElseSt(TKs,CN,AM,T,TM,S):
             T=OE(TKs,CN,AM,'',TM,S)
             if(T):
                 if(TKs[GI].CP == ')'):
+                    with open('IC.txt','a') as f:
+                        f.write('if('+T+'==false) jmp '+L1)
+                        f.write('\n')
                     GI += 1
                     if(Body(TKs,CN,AM,TM,S)):
-                        if(IfElseOpts(TKs,CN,AM,T,TM,S)):
+                        if(IfElseOpts(TKs,CN,AM,T,TM,S,L1)):
                             return True
     else:
         return False
@@ -178,7 +221,7 @@ def C2(TKs,CN,AM,T,TM,S):
     if(TKs[GI].CP in C2_sel):
         T=OE(TKs,CN,AM,'',TM,S)
         if(T):
-            return True
+            return T
         # elif (TKs[GI].CP==';'):
         #     GI+=1
         #     return True
@@ -191,8 +234,9 @@ def C3(TKs,CN,AM,T,TM,S):
     global GI
     C3_sel = ['ID', 'this', ')']
     if(TKs[GI].CP in C3_sel):
-        if(AssignSt(TKs,CN,AM,T,TM,S)):
-            return True
+        T=AssignSt(TKs,CN,AM,T,TM,S)
+        if(T): 
+            return T
         elif(NewIncDecSt(TKs)):
             return True
         return True
@@ -225,15 +269,26 @@ def ForOpts(TKs,CN,AM,T,TM,S):
     if(TKs[GI].CP=='(' or TKs[GI].CP=='ID'):
         if(TKs[GI].CP=='('):
             S=CreateScope()
+            L1=CreatLable()
+            L2=CreatLable()
+            with open('IC.txt','a') as f:
+                f.write(L1+':')
+                f.write('\n')
             GI+=1
-            if(C1(TKs,CN,AM,T,TM,S)):
-                if(C2(TKs,CN,AM,T,TM,S)):
+            T1=C1(TKs,CN,AM,T,TM,S)
+            if(T1):
+                T2=C2(TKs,CN,AM,T,TM,S)
+                if(T2):
+                    with open('IC.txt','a') as f:
+                        f.write('if('+str(T2)+'==False) jmp '+L2)
+                        f.write('\n')
                     if(TKs[GI].CP==';'):
                         GI+=1
-                        if(C3(TKs,CN,AM,T,TM,S)):
+                        T=C3(TKs,CN,AM,T,TM,S)
+                        if(T):
                             if(TKs[GI].CP==')'):
                                 GI+=1
-                                return True
+                                return (L2,T)
         elif(TKs[GI].CP=='ID'):
             GI+=1
             if(TKs[GI].CP=='in'):
@@ -246,8 +301,16 @@ def ForSt(TKs,CN,AM,T,TM,S):
     global GI
     if(TKs[GI].CP=='for'):
         GI+=1
-        if(ForOpts(TKs,CN,AM,T,TM,S)):
+        L1=ForOpts(TKs,CN,AM,T,TM,S)
+        if(L1):
             if(Body(TKs,CN,AM,TM,S)):
+                with open('IC.txt','a') as f:
+                    f.write(str(L1[1])+'='+str(L1[1])+'+1')
+                    f.write('\n')
+                    f.write('jmp '+L1[0])
+                    f.write('\n')   
+                    f.write(L1[0]+':')
+                    f.write('\n')
                 return True
     else:
         return False
@@ -847,7 +910,10 @@ def Init(TKs,CN,AM,T,TM,S):
             OP=TKs[GI].VP
             GI+=1
             T2=InitOpts(TKs,CN,AM,T,TM,S)
-            T=Compatibility(T,T2,OP)
+            with open('IC.txt','a') as f:
+                f.write(T+'='+T2+OP+T1)
+                f.write('\n')
+            # T=Compatibility(T,T2,OP)
             if(T==None or T==''):
                 print('TypeMismatch on line ', TKs[GI].LineNo)
             if(T):
@@ -971,7 +1037,7 @@ def T(TKs,Tv,CN,AM,TM,S,*args):
                 return Tv2
             return Tv
         if(TKs[GI].CP=='int' or TKs[GI].CP=='float' or TKs[GI].CP=='char' or TKs[GI].CP=='string'):
-            Tv=TKs[GI].CP
+            Tv=TKs[GI].VP
             GI+=1
             return Tv
         Tv=FnCall(TKs,CN,AM,T,TM,S)
@@ -988,6 +1054,9 @@ def T(TKs,Tv,CN,AM,TM,S,*args):
             GI+=1
             Tv=T(TKs,Tv,CN,AM,TM,S)
             if(Tv):
+                with open('IC.txt','a') as f:
+                    f.write('not'+Tv)
+                    f.write('\n')
                 return Tv
         # elif(IncDec(TKs,'','','','',S)):
         #     return op
@@ -998,18 +1067,23 @@ def T(TKs,Tv,CN,AM,TM,S,*args):
 
 def NT_(TKs,Tv,CN,AM,TM,S,*args):
     global GI
+    # T=CreatTemp()
     NT__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
               'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and', 'ROP', 'PM','MDM',';']
     if(TKs[GI].CP in NT__sel):
+        # T=CreatTemp()
         if(TKs[GI].CP == 'MDM'):
+            T=CreatTemp()
             op=TKs[GI].VP
             GI += 1
             T1=T(TKs,'',CN,AM,TM,S,args[0])
-            Tv=Compatibility(Tv,T1,op)
+            # Tv=Compatibility(Tv,T1,op)
+            Tv=NT_(TKs,Tv,CN,AM,TM,S,args[0])
+            with open('IC.txt','a') as f:
+                f.write(T+'='+Tv+op+T1)
+                f.write('\n')
             if(Tv):
-                Tv=NT_(TKs,Tv,CN,AM,TM,S,args[0])
-                if(Tv):
-                    return Tv
+                return Tv
         return Tv
     else:
         return ''
@@ -1030,18 +1104,23 @@ def NT(TKs,Tv,CN,AM,TM,S,*args):
 
 def E_(TKs,Tv,CN,AM,TM,S,*args):
     global GI
+    # T=CreatTemp()
     E__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
               'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and', 'ROP', 'PM',';']
     if(TKs[GI].CP in E__sel):
+        # T=CreatTemp()
         if(TKs[GI].CP == 'PM'):
+            T=CreatTemp()
             op=TKs[GI].VP
             GI += 1
             T1=NT(TKs,'',CN,AM,TM,S,args[0])
-            Tv=Compatibility(Tv,T1,op)
+            # Tv=Compatibility(Tv,T1,op)
+            Tv=E_(TKs,Tv,CN,AM,TM,S,args[0])
+            with open('IC.txt','a') as f:
+                f.write(T+'='+Tv+op+T1)
+                f.write('\n')
             if(Tv):
-                Tv=E_(TKs,Tv,CN,AM,TM,S,args[0])
-                if(Tv):
-                    return Tv
+                return Tv
         return Tv
     else:
         return ''
@@ -1064,18 +1143,23 @@ def E(TKs,Tv,CN,AM,TM,S,*args):
 
 def RE_(TKs,Tv,CN,AM,TM,S,*args):
     global GI
+    # T=CreatTemp()
     RE__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
                'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and', 'ROP',';']
     if(TKs[GI].CP in RE__sel):
+        # T=CreatTemp()
         if(TKs[GI].CP == 'ROP'):
+            T=CreatTemp()
             op=TKs[GI].VP
             GI += 1
             T1=E(TKs,'',CN,AM,TM,S,args[0])
-            Tv=Compatibility(Tv,T1,op)
+            # Tv=Compatibility(Tv,T1,op)
+            Tv=RE_(TKs,Tv,CN,AM,TM,S,args[0])
+            with open('IC.txt','a') as f:
+                f.write(T+'='+Tv+op+T1)
+                f.write('\n')
             if(Tv):
-                Tv=RE_(TKs,Tv,CN,AM,TM,S,args[0])
-                if(Tv):
-                    return Tv
+                return Tv
         return Tv
     else:
         return ''
@@ -1098,18 +1182,23 @@ def RE(TKs,Tv,CN,AM,TM,S,*args):
 
 def AE_(TKs,Tv,CN,AM,TM,S,*args):
     global GI
+    # T=CreatTemp()
     AE__sel = ['static', 'DT', 'tuple', 'dict', 'ID', 'var', 'this', 'int',
                'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')', ':', 'or', 'and',';']
     if(TKs[GI].CP in AE__sel):
+        # T=CreatTemp()
         if(TKs[GI].CP == 'and'):
+            T=CreatTemp()
             op=TKs[GI].VP
             GI += 1
             T1=RE(TKs,'',CN,AM,TM,S,args[0])
-            Tv=Compatibility(Tv,T1,op)
+            # Tv=Compatibility(Tv,T1,op)
+            with open('IC.txt','a') as f:
+                f.write(T+'='+Tv+op+T1)
+                f.write('\n')
+            Tv=AE_(TKs,Tv,CN,AM,TM,S,args[0])
             if(Tv):
-                T=AE_(TKs,Tv,CN,AM,TM,S,args[0])
-                if(Tv):
-                    return Tv
+                return Tv
         return Tv
     else:
         return ''
@@ -1136,14 +1225,17 @@ def OE_(TKs,Tv,CN,AM,TM,S,*args):
                'float', 'char', 'string', '(', 'not', 'True', 'False', ',', ')', ':', 'or',';']
     if(TKs[GI].CP in OE__sel):
         if(TKs[GI].CP == 'or'):
+            T=CreatTemp()
             op=TKs[GI].VP
             GI += 1
             T1=AE(TKs,'',CN,AM,TM,S,args[0])
-            Tv=Compatibility(Tv,T1,op)
+            # Tv=Compatibility(Tv,T1,op)
+            with open('IC.txt','a') as f:
+                f.write(T+'='+Tv+op+T1)
+                f.write('\n')
+            Tv=OE_(TKs,Tv,CN,AM,TM,S,args[0])
             if(Tv):
-                Tv=OE_(TKs,Tv,CN,AM,TM,S,args[0])
-                if(Tv):
-                    return Tv
+                return Tv
         return Tv
     else:
         return ''
@@ -1189,7 +1281,7 @@ def FIOpts(TKs,CN,AM,T,TM,S,*args):
             T1=OE(TKs,CN,AM,'',TM,S,0)
             print(GI)
             if(T1 and TKs[GI].VP!='.'):
-                T=Compatibility(T2,T1,Op)
+                # T=Compatibility(T2,T1,Op)
                 if(T==None):
                     print('Type Mismatch Error at line ',TKs[GI].LineNo)
                     return False
@@ -1244,13 +1336,13 @@ def FactorID(TKs,CN,AM,TM,T,S,*args):
         if(T==''):
             if(AM or TKs[GI-2].VP=='.'):
                 T=CLSTBL.LookupCDT(CN,N,AM,TM)
-                return T
+                return N
             else:
                 T=SYMTBL.FnLookupST(N,S)
                 if(T==None):
                     T=SYMTBL.LookupST(N,S,T)
                 else:
-                    return T
+                    return N
                 if(T or TKs[GI].VP=='.'):
                     flag2=1
                 flag=1
@@ -1264,12 +1356,12 @@ def FactorID(TKs,CN,AM,TM,T,S,*args):
                             print("Undeclared Variable Reference ",TKs[GI].VP)
                             return False
                 if(flag2!=0 and TKs[GI].VP in WordSplitter.operators):
-                    return T
+                    return N
         if((not regex.isKw(T)) and (TKs[GI].VP=='.')):
             if(flag2==0 and TKs[GI].VP=='('):
                 pass
             else:
-                return T
+                return N
         if(AM and TKs[GI].CP!='('):
             if(CLSTBL.InsertCDT(CN,N,T,AM,TM)==False and flag!=1):
                 print("Redenclaration Error for "+N+" on line Number ", TKs[GI-1].LineNo)
@@ -1283,7 +1375,7 @@ def FactorID(TKs,CN,AM,TM,T,S,*args):
         if(FIOpts(TKs,CN,AM,T,TM,S,N)):
             if(len(args)>0):
                 if(args[0]==1):
-                    return T
+                    return N
             return N
     return False
 
@@ -1413,7 +1505,8 @@ def Start(TKs):
 
 def SA(TKs):
     global GI
-    if(Start(TKs)):
-        print("Valid Syntax and Semantics")
-    else:
-        print("Error at Line Number ", TKs[GI].LineNo)
+    Start(TKs)
+    # if(Start(TKs)):
+    #     print("Valid Syntax and Semantics")
+    # else:
+    #     print("Error at Line Number ", TKs[GI].LineNo)

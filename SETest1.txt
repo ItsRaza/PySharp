@@ -1,4 +1,4 @@
-class B
+/*class B
 {
     public: int a;
     public: def float fn(float x)
@@ -21,14 +21,37 @@ def float fn(float x,int x)
     {
         float y=x+1;
         return y;
-    }
+    }*/
+
 main()
 {
-    A obj;
+    /*A obj;
     int o=obj.a.a;
     float a=5.3;
     fn(a);
     float oe=8+a*9;
-    /*obj.fn(a);*/
     
+    int a1=5;
+    while(a1>0)
+    {
+        a1=a1-1;
+    }
+    if(a1==0)
+    {
+        int b=a1*2;
+    }
+    else
+    {
+        int c=a1*3;
+    }
+    elif(a1>5)
+    {
+        int z=a1;
+    }*/
+    int a1=0;
+    for(int i=0;i<5;i+=1)
+    {
+        a1=i+a1;
+    }
 }
+/*obj.fn(a);*/
